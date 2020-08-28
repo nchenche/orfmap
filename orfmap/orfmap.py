@@ -8,8 +8,6 @@ Created on Sun Jul 12 16:52:13 2020
 import os
 import sys
 
-#sys.path.append('/home/nicolas/spyder_workspace/ORFMap/orfmap')
-
 from orfmap.lib import fasta_parser
 from orfmap.lib import gff_parser
 from orfmap.lib import parameters
