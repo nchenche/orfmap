@@ -8,6 +8,11 @@ Created on Fri Jul 24 15:37:10 2020
 import argparse
 
 def get_args():
+    """
+    Returns:
+        Parameters
+    """
+
     parser = argparse.ArgumentParser(description='Genomic mapping of pseudo-ORF')
     parser.add_argument("-fna", required=True, nargs="?",
                         help="Genomic fasta file (.fna) ")

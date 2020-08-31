@@ -123,6 +123,11 @@ class GffElement:
         if self.gff_line and self.type not in ['ORF_nc_5-CDS', 'ORF_nc_intron']:
             return '\t'.join(self.gff_line)
         else:
+            if not self.parent:
+                print(self.ovp_phased)
+                print(self.ovp_unphased)
+                print(self.type)
+                print(self.suborfs)
             gff_line = self.seqid
             gff_line += '\t'+self.source
             gff_line += '\t' + self.type
@@ -132,7 +137,8 @@ class GffElement:
             gff_line += '\t' + self.strand
             gff_line += '\t' + self.phase
             gff_line += '\tID=' + self.format_id()
-            gff_line += ';Parent=' + self.seqid+'_'+'1-'+str(self.len_chr)
+            # gff_line += ';Parent=' + self.seqid+'_'+'1-'+str(self.len_chr)
+            gff_line += ';Parent=' + self.parent
             gff_line += ';Status=' + self.status
             gff_line += ';color=' + self.color
 
@@ -212,7 +218,8 @@ class GffElement:
     def _set_attributes(self):
         self._set_type()
         self._id = self.format_id()
-        self.parent = self.seqid+'_'+'1-'+str(self.len_chr)
+        self._set_parent()
+        # self.parent = self.seqid+'_'+'1-'+str(self.len_chr)
         self._set_color()
         self._set_status()
 
@@ -226,6 +233,14 @@ class GffElement:
             self.type = 'ORF_nc_ovp-'+self.ovp_unphased[-1].type
         else:
             self.type = 'ORF_nc_intergenic'
+
+    def _set_parent(self):
+        if self.ovp_phased:
+            self.parent = '|'.join([x._id for x in self.ovp_phased])
+        elif self.ovp_unphased:
+            self.parent = '|'.join([x._id for x in self.ovp_unphased])
+        else:
+            self.parent = self.seqid+'_'+'1-'+str(self.len_chr)
 
     def _set_color(self):
         if 'ORF' in self.type:
