@@ -115,19 +115,12 @@ class GffElement:
         if self.suborfs:
             for suborf in self.suborfs:
                 fastaline += suborf.get_fastaline()
-            print(fastaline)
-
         return fastaline
 
     def get_gffline(self):
-        if self.gff_line and self.type not in ['ORF_nc_5-CDS', 'ORF_nc_intron']:
+        if self.gff_line and self.type not in ['ORF_nc_5-CDS', 'ORF_nc_3-CDS']:
             return '\t'.join(self.gff_line)
         else:
-            if not self.parent:
-                print(self.ovp_phased)
-                print(self.ovp_unphased)
-                print(self.type)
-                print(self.suborfs)
             gff_line = self.seqid
             gff_line += '\t'+self.source
             gff_line += '\t' + self.type
@@ -156,6 +149,10 @@ class GffElement:
             return gff_line + '\n' if not self.suborfs else gff_line
 
     def assignment(self, elements):
+        self.check_ovp(elements)
+        self._set_attributes()
+
+    def check_ovp(self, elements):
         orf_ovp_max = -1
         if elements:
             for element in elements:
@@ -169,51 +166,6 @@ class GffElement:
                             if orf_ovp > orf_ovp_max:
                                 orf_ovp_max = orf_ovp
                                 self.ovp_unphased.append(element)
-
-        self._set_attributes()
-
-    def format_id(self):
-        return '_'.join([self.seqid, self.strand,
-                         str(self.start)+'-'+str(self.end),
-                         str(self.frame), self.type])
-
-    def _get_suborfs(self):
-        gff_line = self.get_gffline()
-        for element in self.ovp_phased:
-            if self.strand == '+':
-                if element.get_coors()[0]-1 - self.start + 1 >= 60:
-                    suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
-                    suborf.end = element.get_coors()[0] - 1
-                    suborf.type = 'ORF_nc_5-CDS'
-                    suborf.status = 'intergenic'
-                    suborf.color = '#FFFF00' #D67229
-                    suborf._id = suborf.format_id()
-                    self.suborfs.append(suborf)
-                if self.end - element.get_coors()[1]+1 + 1 >= 60:
-                    suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
-                    suborf.start = element.get_coors()[1] + 1
-                    suborf.type = 'ORF_nc_intron'
-                    suborf.status = 'intronic'
-                    suborf.color = '#FFFF00'
-                    suborf._id = suborf.format_id()
-                    self.suborfs.append(suborf)
-            else:
-                if self.end - element.get_coors()[1]+1 + 1 >= 60:
-                    suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
-                    suborf.start = element.get_coors()[1] + 1
-                    suborf.type = 'ORF_nc_5-CDS'
-                    suborf.status = 'intergenic'
-                    suborf.color = '#FFFF00'
-                    suborf._id = suborf.format_id()
-                    self.suborfs.append(suborf)
-                if element.get_coors()[0]-1 - self.start + 1 >= 60:
-                    suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
-                    suborf.end = element.get_coors()[0] - 1
-                    suborf.type = 'ORF_nc_intron'
-                    suborf.status = 'intronic'
-                    suborf.color = '#FFFF00'
-                    suborf._id = suborf.format_id()
-                    self.suborfs.append(suborf)
 
     def _set_attributes(self):
         self._set_type()
@@ -233,6 +185,11 @@ class GffElement:
             self.type = 'ORF_nc_ovp-'+self.ovp_unphased[-1].type
         else:
             self.type = 'ORF_nc_intergenic'
+
+    def format_id(self):
+        return '_'.join([self.seqid, self.strand,
+                         str(self.start)+'-'+str(self.end),
+                         str(self.frame), self.type])
 
     def _set_parent(self):
         if self.ovp_phased:
@@ -255,10 +212,50 @@ class GffElement:
             print('Warning: this function is only made for ORF.\n')
 
     def _set_status(self):
-        if 'ORF' in self.type:
-            self.status = self.type.split('_')[-1]
+        if self.ovp_phased:
+            self.status = 'coding'
         else:
-            print('Warning: this function is only made for ORF.\n')
+            self.status = 'non-coding'
+
+    def _get_suborfs(self):
+        # if len(self.ovp_phased) > 1:
+        #     print(self.get_coors(), [ (x.get_coors(), x.parent) for x in self.ovp_phased ])
+        gff_line = self.get_gffline()
+        for element in self.ovp_phased:
+            if self.strand == '+':
+                if element.get_coors()[0]-1 - self.start + 1 >= 60:
+                    suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
+                    suborf.end = element.get_coors()[0] - 1
+                    suborf.type = 'ORF_nc_5-CDS'
+                    suborf.status = 'non-coding'
+                    suborf.color = '#FFFF00' #D67229
+                    suborf._id = suborf.format_id()
+                    self.suborfs.append(suborf)
+                if self.end - element.get_coors()[1]+1 + 1 >= 60:
+                    suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
+                    suborf.start = element.get_coors()[1] + 1
+                    suborf.type = 'ORF_nc_3-CDS'
+                    suborf.status = 'non-coding'
+                    suborf.color = '#FFFF00'
+                    suborf._id = suborf.format_id()
+                    self.suborfs.append(suborf)
+            else:
+                if self.end - element.get_coors()[1]+1 + 1 >= 60:
+                    suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
+                    suborf.start = element.get_coors()[1] + 1
+                    suborf.type = 'ORF_nc_5-CDS'
+                    suborf.status = 'non-coding'
+                    suborf.color = '#FFFF00'
+                    suborf._id = suborf.format_id()
+                    self.suborfs.append(suborf)
+                if element.get_coors()[0]-1 - self.start + 1 >= 60:
+                    suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
+                    suborf.end = element.get_coors()[0] - 1
+                    suborf.type = 'ORF_nc_3-CDS'
+                    suborf.status = 'non-coding'
+                    suborf.color = '#FFFF00'
+                    suborf._id = suborf.format_id()
+                    self.suborfs.append(suborf)
 
 
 class Chromosome():
