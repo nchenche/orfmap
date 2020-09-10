@@ -1,1 +1,4 @@
 orfmap/data/**
+**.fa
+**.gff
+**/__pycache__
