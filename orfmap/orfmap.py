@@ -11,20 +11,22 @@ import sys
 from orfmap.lib import fasta_parser
 from orfmap.lib import gff_parser
 from orfmap.lib import parameters
+from orfmap.lib import seqio
+from orfmap.lib import inspect
+
 
 def main():
     # gets arguments
-    args = parameters.get_args()
+    param = parameters.Param(args=parameters.get_args())
 
-    outpath = args.out
-    fasta_fname = args.fna
-    gff_fname = args.gff
-    outfile = outpath+'mapping_orf_' + '.'.join(os.path.basename(fasta_fname).split('.')[:-1])
+    # parses fasta & gff by chromosomes
+    fasta_hash = fasta_parser.parse(fasta_filename=param.fasta_fname)
+    gff_data = gff_parser.parse(gff_fname=param.gff_fname, fasta_hash=fasta_hash)
 
-    # parses fasta & gff by chromosomes    
-    fasta_hash = fasta_parser.parse(fasta_filename=fasta_fname)
-    gff_data = gff_parser.parse(gff_fname=gff_fname, fasta_hash=fasta_hash)
-    
+    # checking if type(s) given in argument is(are) valid
+    inspect.check_types(gff_data=gff_data, types=param.types)
+    sys.exit(0)
+
     all_orfs = []
     for chr_id in sorted(fasta_hash):
         print('\n-----------------------')
@@ -37,28 +39,18 @@ def main():
     
         # searching for ORFs        
         print('#Searching for ORFs')
-        orfs = gff_parser.get_orfs(gff_chr=gff_chr, orf_len=60)
+        orfs = gff_parser.get_orfs(gff_chr=gff_chr, orf_len=param.orf_len)
 
         # assigning ORFs
         print('#Assigning ORFs status')
         for orf in sorted(orfs, key=lambda x: (x.seqid, x.start)):
-            elements = gff_chr.get_elements(coors=orf.get_coors(), strand=orf.strand, types=['CDS'])
-            orf.assignment(elements)
+            elements = gff_chr.get_elements(coors=orf.get_coors(), strand=orf.strand, types=param.types)
+            orf.assignment(elements, co_ovp=param.co_ovp)
             all_orfs.append(orf)
 
-    print('\n-----------------------')
-    print('#Writing output files (gff and fasta)')
-    with open(outfile+'.gff', "w") as out_gff:
-        header = '# Input genomic fasta file: {}\n'.format(os.path.basename(fasta_fname))
-        header += '# Input gff file: {}\n'.format(os.path.basename(gff_fname))
-        out_gff.write(header)
-        with open(outfile+'.fa', "w") as out_fasta:
-            for orf in all_orfs:
-                out_gff.write(orf.get_gffline())
-                out_fasta.write(orf.get_fastaline())
-
+    # writes outputs
+    seqio.write_orfs(all_orfs=all_orfs, param=param)
     
-
 if __name__ == '__main__':
     sys.exit(main())
 

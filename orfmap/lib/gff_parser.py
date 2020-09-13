@@ -148,16 +148,16 @@ class GffElement:
 
             return gff_line + '\n' if not self.suborfs else gff_line
 
-    def assignment(self, elements):
-        self.check_ovp(elements)
+    def assignment(self, elements, co_ovp):
+        self.check_ovp(elements, co_ovp)
         self._set_attributes()
 
-    def check_ovp(self, elements):
+    def check_ovp(self, elements, co_ovp=0.7):
         orf_ovp_max = -1
         if elements:
             for element in elements:
                 orf_ovp, element_ovp = get_overlap(orf_coors=self.get_coors(), other_coors=element.get_coors())
-                if element_ovp == 1.0 or orf_ovp >= 0.7:
+                if element_ovp == 1.0 or orf_ovp >= co_ovp:
                     if isinstance(element.phase, int) and element.frame == self.frame:
                         if element not in self.ovp_phased:
                             self.ovp_phased.append(element)
