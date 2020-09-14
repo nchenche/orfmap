@@ -4,6 +4,8 @@ Created on Sun Jul 12 16:59:28 2020
 
 @author: nicolas
 """
+import sys
+from orfmap.lib import inspect
 
 
 class GffElement:
@@ -202,7 +204,7 @@ class GffElement:
     def _set_color(self):
         if 'ORF' in self.type:
             if 'nc' not in self.type:
-                self.color = '#ff0000' #ff4d4d
+                self.color = '#ff0000'  # ff4d4d
             else:
                 if 'intergenic' in self.type:
                     self.color = '#3366ff'
@@ -435,6 +437,7 @@ def get_orfs(gff_chr, orf_len=60):
 
 GFF_DESCR = {}
 
+
 def set_gff_descr(gff_fname):
     global GFF_DESCR
     GFF_DESCR = {}
@@ -449,31 +452,35 @@ def set_gff_descr(gff_fname):
                     GFF_DESCR[name] = pos_chr
                 
             line = gff_file.readline()
-            
+
+
 def parse(gff_fname, fasta_hash, chr_id=None):
     if not GFF_DESCR:
         set_gff_descr(gff_fname)
-        
-    chr_ids = sorted(GFF_DESCR) if not chr_id else [chr_id]
+
+    chrs_common = inspect.check_chrids(chrs_gff=sorted(GFF_DESCR), chrs_fasta=sorted(fasta_hash))
+    chr_ids = sorted(chrs_common) if not chr_id else [chr_id]
+    if chr_id and chr_id not in chrs_common:
+        print('Error: wrong chromosome id\n')
+        sys.exit(1)
+    # sys.exit(0)
+
     gff_data = {}
-    if chr_id and chr_id not in GFF_DESCR:
-        print('Warning: wrong chromosome id\n')
-    else:
-        with open(gff_fname, 'r') as gff_file:
-            for chr_id in chr_ids:
-                gff_file.seek(GFF_DESCR[chr_id], 0)
+    with open(gff_fname, 'r') as gff_file:
+        for chr_id in chr_ids:
+            gff_file.seek(GFF_DESCR[chr_id], 0)
+            line = gff_file.readline()
+            chr_name = line.split()[0]
+            while chr_name == chr_id:
+                if chr_name not in gff_data:
+                    gff_data[chr_name] = Chromosome(_id=chr_name, fasta_chr=fasta_hash[chr_id])
+                    chromosome = gff_data[chr_name]
+                    chromosome.source = line.split()[1]
+
+                chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
+
                 line = gff_file.readline()
                 chr_name = line.split()[0]
-                while chr_name == chr_id:
-                    if chr_name not in gff_data:
-                        gff_data[chr_name] = Chromosome(_id=chr_name, fasta_chr=fasta_hash[chr_id])
-                        chromosome = gff_data[chr_name]
-                        chromosome.source = line.split()[1]
-                        
-                    chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
-                    
-                    line = gff_file.readline()
-                    chr_name = line.split()[0]
             
     return gff_data
 
