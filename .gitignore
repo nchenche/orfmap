@@ -1,5 +1,15 @@
-orfmap/data/**
-**.fa
-**.gff
-**/__pycache_
-**/data/mapping_*_
+##########################
+# Orfmap data            #
+##########################
+orfmap/data/*
+
+##########################
+# Python complied source #
+##########################
+*\.pyc
+*\.pyo
+build/
+dist/
+doc/_build/
+
+*\__pycache__
