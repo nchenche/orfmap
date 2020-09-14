@@ -22,20 +22,40 @@ def get_types(gff_data):
 
     return all_types_flatten
 
+def check_chrids(chrs_gff=[], chrs_fasta=[]):
+    chr_common = set(chrs_gff).intersection(chrs_fasta)
 
-def check_chrids(gff_data=None, fasta_hash=None), param=None:
-    chr_fasta_not_in_gff = set(sorted(fasta_hash)).difference(set(sorted(gff_data)))
-    chr_gff_not_in_fasta = set(sorted(gff_data)).difference(set(sorted(fasta_hash)))
-    chr_not_in_both = chr_fasta_not_in_gff.intersection(chr_gff_not_in_fasta)
-
-    if chr_not_in_both:
-        pass #print unconsistent chromosome ids, check your files
-    if chr_fasta_not_in_gff:
-        print('\nWarning: the following chromosome id(s) in {} are absent in {}:'.format(chr_id,
-                                                                                         param.fasta_fname,
-                                                                                         param.gff_fname)
-        print('\n'.join([' - ' + x for x in sorted(chr_fasta_not_in_gff)]))
+    if chr_common:
+        if len(chr_common) != len(chrs_fasta):
+            print('\nWarning: all chromosomes are not shared between gff and fasta files.\n')
+            table_chrs(chrs_gff, chrs_fasta)
+        else:
+            print('\nAll chromosomes are shared between gff and fasta files.\n')
+            table_chrs(chrs_gff, chrs_fasta)
+        return chr_common
+    else:
+        print('\nError: chromosomes are not consistent between gff and fasta files.\n')
+        table_chrs(chrs_gff, chrs_fasta)
         sys.exit(1)
+
+def table_chrs(chrs_gff, chrs_fasta):
+    table_header = ["Chromosome ids", "in GFF", "in fasta"]
+    spacer_len = 20
+    table_border = spacer_len * len(table_header) * '-'
+    row_format = ('{:>'+str(spacer_len)+'}') * (len(table_header))
+    print(row_format.format(*table_header))
+    print(table_border)
+
+    all_chrs = sorted(set(chrs_gff + chrs_fasta))
+    for chr in all_chrs:
+        if chr in chrs_gff and chr in chrs_fasta:
+            print(row_format.format(chr, 'X', 'X'))
+        elif chr in chrs_gff and chr not in chrs_fasta:
+            print(row_format.format(chr, 'X', '-'))
+        elif chr in chrs_fasta and chr not in chrs_gff:
+            print(row_format.format(chr, '-', 'X'))
+    print(table_border+'\n')
+
 
 
 
