@@ -25,7 +25,6 @@ def main():
 
     # checking if type(s) given in argument is(are) valid
     inspect.check_types(gff_data=gff_data, types=param.types)
-    sys.exit(0)
 
     all_orfs = []
     for chr_id in sorted(fasta_hash):
