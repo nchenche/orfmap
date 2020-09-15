@@ -1,4 +1,10 @@
 import sys
+from orfmap.lib import logHandler
+from orfmap.lib import inspect
+
+
+logger = logHandler.get_logger(name=__name__)
+
 
 def check_types(gff_data=None, types=[]):
     unconsistent_types = []
@@ -9,10 +15,15 @@ def check_types(gff_data=None, types=[]):
             unconsistent_types.append(_type)
 
     if unconsistent_types:
-        print('Warning: wrong type(s) has(have) been given:')
-        print('\n'.join([' - ' + x for x in unconsistent_types]))
-        print('\nYou can choose amongst the types listed below:')
-        print('\n'.join([' - ' + x for x in all_types])+'\n')
+        logger.error('Wrong argument type(s) has(have) been given:')
+        for wrong_type in unconsistent_types:
+            logger.error(' - ' + wrong_type)
+        logger.error('')
+
+        logger.error('You can choose amongst the types listed below:')
+        for valid_type in all_types:
+            logger.error(' - ' + valid_type)
+        logger.error('')
         sys.exit(1)
 
 
@@ -27,10 +38,13 @@ def check_chrids(chrs_gff=[], chrs_fasta=[]):
 
     if chr_common:
         if len(chr_common) != len(chrs_fasta):
-            print('\nWarning: all chromosomes are not shared between gff and fasta files.\n')
+            logger.warning('')
+            logger.warning('\All chromosomes are not shared between gff and fasta files.')
             table_chrs(chrs_gff, chrs_fasta)
+            logger.warning('\The process will continue with shared chromosome ids only.')
+            logger.warning('')
         else:
-            print('\nAll chromosomes are shared between gff and fasta files.\n')
+            logger.info('All chromosomes are shared between gff and fasta files.')
             table_chrs(chrs_gff, chrs_fasta)
         return chr_common
     else:
@@ -43,18 +57,19 @@ def table_chrs(chrs_gff, chrs_fasta):
     spacer_len = 20
     table_border = spacer_len * len(table_header) * '-'
     row_format = ('{:>'+str(spacer_len)+'}') * (len(table_header))
-    print(row_format.format(*table_header))
-    print(table_border)
+    logger.info(row_format.format(*table_header))
+    logger.info(table_border)
 
     all_chrs = sorted(set(chrs_gff + chrs_fasta))
     for chr in all_chrs:
         if chr in chrs_gff and chr in chrs_fasta:
-            print(row_format.format(chr, 'X', 'X'))
+            logger.info(row_format.format(chr, 'X', 'X'))
         elif chr in chrs_gff and chr not in chrs_fasta:
-            print(row_format.format(chr, 'X', '-'))
+            logger.info(row_format.format(chr, 'X', '-'))
         elif chr in chrs_fasta and chr not in chrs_gff:
-            print(row_format.format(chr, '-', 'X'))
-    print(table_border+'\n')
+            logger.info(row_format.format(chr, '-', 'X'))
+    logger.info(table_border)
+    logger.info('')
 
 
 

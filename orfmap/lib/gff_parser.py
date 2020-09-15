@@ -5,7 +5,11 @@ Created on Sun Jul 12 16:59:28 2020
 @author: nicolas
 """
 import sys
+from orfmap.lib import logHandler
 from orfmap.lib import inspect
+
+
+logger = logHandler.get_logger(name=__name__)
 
 
 class GffElement:
