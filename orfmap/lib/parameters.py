@@ -22,7 +22,7 @@ class Param:
         self.orf_len = args.orf_len
         self.co_ovp = args.co_ovp
 
-        self.outpath = args.out
+        self.outpath = args.out + '/'
         os.makedirs(self.outpath, exist_ok=True)
         self.default_basename = 'mapping_orf_'
         self.default_mainname = '.'.join(os.path.basename(self.fasta_fname).split('.')[:-1])

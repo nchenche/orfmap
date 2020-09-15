@@ -2,8 +2,27 @@ import logging
 import logging.config
 
 
-def get_logger(name, outpath=None):
+class Logger:
+  def __init__(self, name, outpath=None):
+    if outpath:
+        config = get_config(outpath=outpath)
+        logging.config.dictConfig(config)
+    self.logger = logging.getLogger(name)
 
+  def deco(self, log):
+    return '-' * len(log)
+
+  def info(self, log, decoration=False):
+    if decoration:
+      deco = self.deco(log)
+      self.logger.info(deco)
+      self.logger.info(log)
+      self.logger.info(deco)
+    else:
+      self.logger.info(log)
+
+
+def get_logger(name, outpath=None):
     if outpath:
         config = get_config(outpath=outpath)
         logging.config.dictConfig(config)

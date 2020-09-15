@@ -150,7 +150,6 @@ class GffElement:
                 gff_line += '\n'
                 for suborf in self.suborfs:
                     gff_line += suborf.get_gffline()
-                # print(gff_line)
 
             return gff_line + '\n' if not self.suborfs else gff_line
 
@@ -164,7 +163,7 @@ class GffElement:
             for element in elements:
                 orf_ovp, element_ovp = get_overlap(orf_coors=self.get_coors(), other_coors=element.get_coors())
                 if element_ovp == 1.0 or orf_ovp >= co_ovp:
-                    if isinstance(element.phase, int) and element.frame == self.frame:
+                    if isinstance(element.phase, int) and element.frame == self.frame and element.strand == self.strand:
                         if element not in self.ovp_phased:
                             self.ovp_phased.append(element)
                     else:
@@ -177,7 +176,6 @@ class GffElement:
         self._set_type()
         self._id = self.format_id()
         self._set_parent()
-        # self.parent = self.seqid+'_'+'1-'+str(self.len_chr)
         self._set_color()
         self._set_status()
 
@@ -186,11 +184,14 @@ class GffElement:
 
     def _set_type(self):
         if self.ovp_phased:
-            self.type = 'ORF_CDS'
+            self.type = 'CDS'
         elif self.ovp_unphased:
-            self.type = 'ORF_nc_ovp-'+self.ovp_unphased[-1].type
+            highest_overlapping_element = self.ovp_unphased[-1]
+            self.type = 'nc_ovp-' + highest_overlapping_element.type
+            if highest_overlapping_element.strand != self.strand:
+                self.type += '-opp'
         else:
-            self.type = 'ORF_nc_intergenic'
+            self.type = 'nc_intergenic'
 
     def format_id(self):
         return '_'.join([self.seqid, self.strand,
@@ -206,16 +207,16 @@ class GffElement:
             self.parent = self.seqid+'_'+'1-'+str(self.len_chr)
 
     def _set_color(self):
-        if 'ORF' in self.type:
-            if 'nc' not in self.type:
-                self.color = '#ff0000'  # ff4d4d
-            else:
-                if 'intergenic' in self.type:
-                    self.color = '#3366ff'
-                else:
-                    self.color = '#2eb82e'
+        if 'CDS' in self.type:
+            self.color = '#ff0000'  # ff4d4d
         else:
-            print('Warning: this function is only made for ORF.\n')
+            if self.type == 'nc_intergenic':
+                self.color = '#3366ff'
+            else:
+                if 'opp' in self.type:
+                    self.color = '#babaa1'
+                else:
+                    self.color = '#e3e50d'
 
     def _set_status(self):
         if self.ovp_phased:
@@ -232,7 +233,7 @@ class GffElement:
                 if element.get_coors()[0]-1 - self.start + 1 >= 60:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
                     suborf.end = element.get_coors()[0] - 1
-                    suborf.type = 'ORF_nc_5-CDS'
+                    suborf.type = 'nc_5-CDS'
                     suborf.status = 'non-coding'
                     suborf.color = '#FFFF00' #D67229
                     suborf._id = suborf.format_id()
@@ -240,7 +241,7 @@ class GffElement:
                 if self.end - element.get_coors()[1]+1 + 1 >= 60:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
                     suborf.start = element.get_coors()[1] + 1
-                    suborf.type = 'ORF_nc_3-CDS'
+                    suborf.type = 'nc_3-CDS'
                     suborf.status = 'non-coding'
                     suborf.color = '#FFFF00'
                     suborf._id = suborf.format_id()
@@ -249,7 +250,7 @@ class GffElement:
                 if self.end - element.get_coors()[1]+1 + 1 >= 60:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
                     suborf.start = element.get_coors()[1] + 1
-                    suborf.type = 'ORF_nc_5-CDS'
+                    suborf.type = 'nc_5-CDS'
                     suborf.status = 'non-coding'
                     suborf.color = '#FFFF00'
                     suborf._id = suborf.format_id()
@@ -257,7 +258,7 @@ class GffElement:
                 if element.get_coors()[0]-1 - self.start + 1 >= 60:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
                     suborf.end = element.get_coors()[0] - 1
-                    suborf.type = 'ORF_nc_3-CDS'
+                    suborf.type = 'nc_3-CDS'
                     suborf.status = 'non-coding'
                     suborf.color = '#FFFF00'
                     suborf._id = suborf.format_id()
@@ -306,27 +307,43 @@ class Chromosome():
 
         return [ self.gff_elements[x] for x in intervals_flat ]
         
-    def get_elements(self, coors=None, frame=None, strand='+', types=None):
+    def get_elements(self, coors=None, frame=None, strand=None, types=None):
         """
-        Returns a list of Gff_element instances of CDS type. If the frame is
+        Returns a list of Gff_element instances of a given type. If the frame is
         given, only CDS in this frame will be returned, all CDS otherwise.
         
         Arguments:
-            - frame: None or 0, 1 or 2
+            - frame: None or int in 0, 1 or 2
+            - strand: None or str in '+' or '-'
+            - coors: None or list of coors in the form [(104, 395), ...]
+            - types: None or list of str (e.g. ['CDS', 'tRNA']
             
         Returns:
             - list of Gff_element instances        
         """
+
         if types:
             if coors:
-                elements = [ x for x in self.get_elements_in_intervals(coors) if x.type in types and x.strand == strand ]
+                if strand:
+                    elements = [ x for x in self.get_elements_in_intervals(coors) if x.type in types and x.strand == strand ]
+                else:
+                    elements = [ x for x in self.get_elements_in_intervals(coors) if x.type in types ]
             else:
-                elements = [ x for x in self.gff_elements if x.type in types and x.strand == strand]
+                if strand:
+                    elements = [ x for x in self.gff_elements if x.type in types and x.strand == strand]
+                else:
+                    elements = [ x for x in self.gff_elements if x.type in types]
         else:
             if coors:
-                elements = [ x for x in self.get_elements_in_intervals(coors) if x.strand == strand ]
+                if strand:
+                    elements = [ x for x in self.get_elements_in_intervals(coors) if x.strand == strand ]
+                else:
+                    elements = [ x for x in self.get_elements_in_intervals(coors) ]
             else:
-                elements = [ x for x in self.gff_elements if x.strand == strand]
+                if strand:
+                    elements = [ x for x in self.gff_elements if x.strand == strand]
+                else:
+                    elements = [ x for x in self.gff_elements ]
 
         if frame == None:
             return elements
