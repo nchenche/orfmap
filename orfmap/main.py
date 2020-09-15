@@ -8,7 +8,7 @@ Created on Sun Jul 12 16:52:13 2020
 import os
 import sys
 
-from orfmap import orfmap
+from orfmap import orfmapper
 from orfmap.lib import logHandler
 from orfmap.lib import fasta_parser
 from orfmap.lib import gff_parser

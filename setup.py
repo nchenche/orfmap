@@ -17,7 +17,7 @@ st.setup(name='orfmap',
                       },
          entry_points={
              'console_scripts': [
-                 'run_orfmap=orfmap.orfmap:main']
+                 'run_orfmap=orfmap.main:main']
                       }
         )
 

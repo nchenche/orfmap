@@ -1,12 +1,5 @@
-import os
-import sys
-
 from orfmap.lib import logHandler
-from orfmap.lib import fasta_parser
 from orfmap.lib import gff_parser
-from orfmap.lib import parameters
-from orfmap.lib import seqio
-from orfmap.lib import inspect
 
 
 logger = logHandler.get_logger(name='__name__')
