@@ -283,7 +283,7 @@ def fasta_descriptors(fasta_fname):
     with open(fasta_fname, 'rb') as sequences_file:
         line = sequences_file.readline()
         line = line.decode()
-        
+
         while line:
             if line.startswith('>'):
                 descriptor = {'fasta_fname': None,
@@ -326,9 +326,9 @@ def parse(fasta_filename):
         - fasta_hash: a dictionary of Fasta_hash instances
     """
     fasta_descriptor = fasta_descriptors(fasta_filename)
-    
+
     fasta_hash = {}
     for descriptor in fasta_descriptor:
         fasta_hash[descriptor['header_id']] = Fasta_hash(descriptor)
-        
+        print(descriptor)
     return fasta_hash

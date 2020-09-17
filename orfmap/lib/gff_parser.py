@@ -9,7 +9,7 @@ from orfmap.lib import logHandler
 from orfmap.lib import inspect
 
 
-logger = logHandler.get_logger(name=__name__)
+logger = logHandler.Logger(name=__name__)
 
 
 class GffElement:
@@ -124,7 +124,7 @@ class GffElement:
         return fastaline
 
     def get_gffline(self):
-        if self.gff_line and self.type not in ['ORF_nc_5-CDS', 'ORF_nc_3-CDS']:
+        if self.gff_line and self.type not in ['nc_5-CDS', 'nc_3-CDS']:
             return '\t'.join(self.gff_line)
         else:
             gff_line = self.seqid
@@ -136,7 +136,6 @@ class GffElement:
             gff_line += '\t' + self.strand
             gff_line += '\t' + self.phase
             gff_line += '\tID=' + self.format_id()
-            # gff_line += ';Parent=' + self.seqid+'_'+'1-'+str(self.len_chr)
             gff_line += ';Parent=' + self.parent
             gff_line += ';Status=' + self.status
             gff_line += ';color=' + self.color
@@ -184,7 +183,7 @@ class GffElement:
 
     def _set_type(self):
         if self.ovp_phased:
-            self.type = 'CDS'
+            self.type = 'c_CDS'
         elif self.ovp_unphased:
             highest_overlapping_element = self.ovp_unphased[-1]
             self.type = 'nc_ovp-' + highest_overlapping_element.type
@@ -207,16 +206,16 @@ class GffElement:
             self.parent = self.seqid+'_'+'1-'+str(self.len_chr)
 
     def _set_color(self):
-        if 'CDS' in self.type:
-            self.color = '#ff0000'  # ff4d4d
+        if self.type == 'c_CDS':
+            self.color = '#ff4d00'  # ff4d4d
         else:
             if self.type == 'nc_intergenic':
-                self.color = '#3366ff'
+                self.color = '#005073'
             else:
                 if 'opp' in self.type:
-                    self.color = '#babaa1'
+                    self.color = '#71c7ec'
                 else:
-                    self.color = '#e3e50d'
+                    self.color = '#2935d6'
 
     def _set_status(self):
         if self.ovp_phased:
@@ -234,16 +233,18 @@ class GffElement:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
                     suborf.end = element.get_coors()[0] - 1
                     suborf.type = 'nc_5-CDS'
+                    suborf.frame = self.frame
                     suborf.status = 'non-coding'
-                    suborf.color = '#FFFF00' #D67229
+                    suborf.color = '#ffc100' #D67229
                     suborf._id = suborf.format_id()
                     self.suborfs.append(suborf)
                 if self.end - element.get_coors()[1]+1 + 1 >= 60:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
                     suborf.start = element.get_coors()[1] + 1
                     suborf.type = 'nc_3-CDS'
+                    suborf.frame = self.frame
                     suborf.status = 'non-coding'
-                    suborf.color = '#FFFF00'
+                    suborf.color = '#ffc100'
                     suborf._id = suborf.format_id()
                     self.suborfs.append(suborf)
             else:
@@ -251,16 +252,18 @@ class GffElement:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
                     suborf.start = element.get_coors()[1] + 1
                     suborf.type = 'nc_5-CDS'
+                    suborf.frame = self.frame
                     suborf.status = 'non-coding'
-                    suborf.color = '#FFFF00'
+                    suborf.color = '#ffc100'
                     suborf._id = suborf.format_id()
                     self.suborfs.append(suborf)
                 if element.get_coors()[0]-1 - self.start + 1 >= 60:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
                     suborf.end = element.get_coors()[0] - 1
                     suborf.type = 'nc_3-CDS'
+                    suborf.frame = self.frame
                     suborf.status = 'non-coding'
-                    suborf.color = '#FFFF00'
+                    suborf.color = '#ffc100'
                     suborf._id = suborf.format_id()
                     self.suborfs.append(suborf)
 
@@ -479,15 +482,18 @@ def parse(gff_fname, fasta_hash, chr_id=None):
     if not GFF_DESCR:
         set_gff_descr(gff_fname)
 
+    logger.info('Checking chromosome IDs consistency between GFF and fasta file...')
+    logger.info('')
     chrs_common = inspect.check_chrids(chrs_gff=sorted(GFF_DESCR), chrs_fasta=sorted(fasta_hash))
     chr_ids = sorted(chrs_common) if not chr_id else [chr_id]
     if chr_id and chr_id not in chrs_common:
-        print('Error: wrong chromosome id\n')
+        logger.error('Error: wrong chromosome ID')
+        logger.error('')
         sys.exit(1)
-    # sys.exit(0)
 
     gff_data = {}
     with open(gff_fname, 'r') as gff_file:
+        EOF = gff_file.seek(0, 2)
         for chr_id in chr_ids:
             gff_file.seek(GFF_DESCR[chr_id], 0)
             line = gff_file.readline()
@@ -501,7 +507,10 @@ def parse(gff_fname, fasta_hash, chr_id=None):
                 chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
 
                 line = gff_file.readline()
-                chr_name = line.split()[0]
-            
+                if gff_file.tell() == EOF:
+                    break
+                else:
+                    chr_name = line.split()[0]
+
     return gff_data
 

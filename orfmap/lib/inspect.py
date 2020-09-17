@@ -2,8 +2,7 @@ import sys
 from orfmap.lib import logHandler
 from orfmap.lib import inspect
 
-
-logger = logHandler.get_logger(name=__name__)
+logger = logHandler.Logger(name=__name__)
 
 
 def check_types(gff_data=None, types=[]):
@@ -38,18 +37,17 @@ def check_chrids(chrs_gff=[], chrs_fasta=[]):
 
     if chr_common:
         if len(chr_common) != len(chrs_fasta):
-            logger.warning('')
-            logger.warning('\All chromosomes are not shared between gff and fasta files.')
             table_chrs(chrs_gff, chrs_fasta)
-            logger.warning('\The process will continue with shared chromosome ids only.')
-            logger.warning('')
+            warning_log = 'All chromosomes are not shared between GFF and fasta files.' + \
+                           'The process will continue with shared chromosome IDs only.'
+            logger.warning(warning_log)
         else:
-            logger.info('All chromosomes are shared between gff and fasta files.')
             table_chrs(chrs_gff, chrs_fasta)
+            logger.info('All chromosomes are shared between GFF and fasta files.')
         return chr_common
     else:
-        print('\nError: chromosomes are not consistent between gff and fasta files.\n')
         table_chrs(chrs_gff, chrs_fasta)
+        logger.error('Chromosomes are not consistent between GFF and fasta files.')
         sys.exit(1)
 
 def table_chrs(chrs_gff, chrs_fasta):
@@ -68,7 +66,6 @@ def table_chrs(chrs_gff, chrs_fasta):
             logger.info(row_format.format(chr, 'X', '-'))
         elif chr in chrs_fasta and chr not in chrs_gff:
             logger.info(row_format.format(chr, '-', 'X'))
-    logger.info(table_border)
     logger.info('')
 
 

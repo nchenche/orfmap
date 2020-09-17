@@ -12,14 +12,30 @@ class Logger:
   def deco(self, log):
     return '-' * len(log)
 
-  def info(self, log, decoration=False):
-    if decoration:
+  def title(self, log):
+      self.logger.info('')
+      self.logger.info('')
+      self.logger.info('')
       deco = self.deco(log)
+      # self.logger.info(deco)
+      self.logger.info(log.upper())
       self.logger.info(deco)
+      self.logger.info('')
+
+  def debug(self, log):
+      self.logger.debug(log)
+
+  def info(self, log):
       self.logger.info(log)
-      self.logger.info(deco)
-    else:
-      self.logger.info(log)
+
+  def warning(self, log):
+      self.logger.warning(log)
+
+  def error(self, log):
+      self.logger.error(log)
+
+  def critical(self, log):
+      self.logger.critical(log)
 
 
 def get_logger(name, outpath=None):
@@ -30,13 +46,14 @@ def get_logger(name, outpath=None):
     return logging.getLogger(name)
 
 
+
 def get_config(outpath='./'):
-    config = {
+  config = {
       "version": 1,
       "disable_existing_loggers": False,
       "formatters": {
         "detailed": {
-          "format": "%(asctime)s %(name)s %(levelname)s:\t%(message)s",
+          "format": "%(asctime)-12s %(name)-24s %(levelname)s:\t\t %(message)s",
           "datefmt": "%H:%M:%S"
         },
         "simple": {
@@ -85,6 +102,6 @@ def get_config(outpath='./'):
         "handlers": ["console", "info_handler"],
         "propagate": False
       }
-    }
+  }
 
-    return config
+  return config

@@ -14,8 +14,6 @@ def write_orfs(all_orfs=[], param=None):
 
     """
 
-    print('\n-----------------------')
-    print('#Writing output files (gff and fasta)')
     with open(param.outfile + '.gff', "w") as out_gff:
         header = '# Input genomic fasta file: {}\n'.format(os.path.basename(param.fasta_fname))
         header += '# Input gff file: {}\n'.format(os.path.basename(param.gff_fname))

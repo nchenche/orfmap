@@ -8,7 +8,7 @@ def mapping(gff_data, fasta_hash, param):
 
     all_orfs = []
     for chr_id in sorted(fasta_hash):
-        logger.info('Reading chromosome {} '.format(chr_id))
+        logger.info('Reading chromosome {} ...'.format(chr_id))
         gff_chr = gff_data[chr_id]
 
         logger.info(' - ORF mapping')
