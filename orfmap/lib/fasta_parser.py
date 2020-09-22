@@ -427,7 +427,7 @@ class Fasta:
                                        self.seq_len, self.line_len, self.off_char, self.nucid_max)
 
 
-def parse_fasta(fasta_filename):
+def parse(fasta_filename):
     """
     Reads a fasta file and stores key index positions to parse it without the need to store the whole file in memory.
 
@@ -466,86 +466,86 @@ def parse_fasta(fasta_filename):
     return { x.chr: x for x in chr_indexes }
 
 
-def fasta_descriptors(fasta_fname):
-    """
-    Function returning key elements required to parse/read a genomic fasta file
-    without the need to store the whole file in memory.
-    
-    Argument:
-        - fasta_fname: fasta filename (str)
-        
-    Returns:
-        - fasta_descriptor: a list of a descriptor dictionary, one per chromosome:
-                - descriptor = {'fasta_fname': str,
-                              'header_id': int,
-                              'header_start_pos': int,
-                              'header_len': int,
-                              'seqline_len': int,
-                              'seqfile_end_pos': int}
-    
-                with:
-                    - fasta_fname:  the fasta filename with its path 
-                                        (-> "/path/to/fasta_filename.fa")
-                    - header_id:  ID of the nucleotide sequence (e.g. "NC_037310.1")
-                    - header_start_pos:  cursor position pointing at the first character of 
-                                        _id
-                    - header_len:  number of character (including "\n") in the line 
-                                    containing _id
-                    - seqline_len:  number of character (including "\n") in a nucleotide
-                                    sequence
-                    - seqfile_end_pos:  number of character (including "\n") in the 
-                                        whole nucleotide sequence
-    """
-    fasta_descriptor = []
-
-    with open(fasta_fname, 'rb') as sequences_file:
-        line = sequences_file.readline()
-        line = line.decode()
-
-        while line:
-            if line.startswith('>'):
-                descriptor = {'fasta_fname': None,
-                              'header_id': None,
-                              'header_start_pos': None,
-                              'header_len': None,
-                              'seqline_len': None,
-                              'seqfile_end_pos': None}
-
-                descriptor['fasta_fname'] = fasta_fname
-                descriptor['header_id'] = line.split()[0].split('>')[-1]
-                descriptor['header_len'] = len(line)
-                descriptor['header_start_pos'] = sequences_file.tell() - descriptor['header_len']
-                seq = sequences_file.readline()
-                descriptor['seqline_len'] = len(seq)
-
-                if fasta_descriptor:
-                    fasta_descriptor[-1]['seqfile_end_pos'] = descriptor['header_start_pos'] - 1
-
-                fasta_descriptor.append(descriptor)
-
-                sequences_file.seek(descriptor['header_start_pos']+descriptor['header_len'], 0)
-
-            line = sequences_file.readline()
-            line = line.decode()
-            
-        fasta_descriptor[-1]['seqfile_end_pos'] = sequences_file.tell()
-        
-    return fasta_descriptor
-
-def parse(fasta_filename):
-    """
-    Function generating a descriptor of a genomic fasta file and using it to create
-    a dictionary of Fasta_hash instances, one per chromosome.
-    
-    Argument:
-        - fasta_fname: fasta filename (str)
-        
-    Returns:
-        - fasta_hash: a dictionary of Fasta_hash instances
-    """
-    fasta_descriptor = fasta_descriptors(fasta_filename)
-
-    fasta_hash = {}
-    for descriptor in fasta_descriptor:
-        fasta_hash[descriptor['header_id']] = Fasta_hash(descriptor)
-    return fasta_hash
+# def fasta_descriptors(fasta_fname):
+#     """
+#     Function returning key elements required to parse/read a genomic fasta file
+#     without the need to store the whole file in memory.
+#
+#     Argument:
+#         - fasta_fname: fasta filename (str)
+#
+#     Returns:
+#         - fasta_descriptor: a list of a descriptor dictionary, one per chromosome:
+#                 - descriptor = {'fasta_fname': str,
+#                               'header_id': int,
+#                               'header_start_pos': int,
+#                               'header_len': int,
+#                               'seqline_len': int,
+#                               'seqfile_end_pos': int}
+#
+#                 with:
+#                     - fasta_fname:  the fasta filename with its path
+#                                         (-> "/path/to/fasta_filename.fa")
+#                     - header_id:  ID of the nucleotide sequence (e.g. "NC_037310.1")
+#                     - header_start_pos:  cursor position pointing at the first character of
+#                                         _id
+#                     - header_len:  number of character (including "\n") in the line
+#                                     containing _id
+#                     - seqline_len:  number of character (including "\n") in a nucleotide
+#                                     sequence
+#                     - seqfile_end_pos:  number of character (including "\n") in the
+#                                         whole nucleotide sequence
+#     """
+#     fasta_descriptor = []
+#
+#     with open(fasta_fname, 'rb') as sequences_file:
+#         line = sequences_file.readline()
+#         line = line.decode()
+#
+#         while line:
+#             if line.startswith('>'):
+#                 descriptor = {'fasta_fname': None,
+#                               'header_id': None,
+#                               'header_start_pos': None,
+#                               'header_len': None,
+#                               'seqline_len': None,
+#                               'seqfile_end_pos': None}
+#
+#                 descriptor['fasta_fname'] = fasta_fname
+#                 descriptor['header_id'] = line.split()[0].split('>')[-1]
+#                 descriptor['header_len'] = len(line)
+#                 descriptor['header_start_pos'] = sequences_file.tell() - descriptor['header_len']
+#                 seq = sequences_file.readline()
+#                 descriptor['seqline_len'] = len(seq)
+#
+#                 if fasta_descriptor:
+#                     fasta_descriptor[-1]['seqfile_end_pos'] = descriptor['header_start_pos'] - 1
+#
+#                 fasta_descriptor.append(descriptor)
+#
+#                 sequences_file.seek(descriptor['header_start_pos']+descriptor['header_len'], 0)
+#
+#             line = sequences_file.readline()
+#             line = line.decode()
+#
+#         fasta_descriptor[-1]['seqfile_end_pos'] = sequences_file.tell()
+#
+#     return fasta_descriptor
+#
+# def parse(fasta_filename):
+#     """
+#     Function generating a descriptor of a genomic fasta file and using it to create
+#     a dictionary of Fasta_hash instances, one per chromosome.
+#
+#     Argument:
+#         - fasta_fname: fasta filename (str)
+#
+#     Returns:
+#         - fasta_hash: a dictionary of Fasta_hash instances
+#     """
+#     fasta_descriptor = fasta_descriptors(fasta_filename)
+#
+#     fasta_hash = {}
+#     for descriptor in fasta_descriptor:
+#         fasta_hash[descriptor['header_id']] = Fasta_hash(descriptor)
+#     return fasta_hash
