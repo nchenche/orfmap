@@ -26,8 +26,8 @@ def main():
     # parses fasta & gff by chromosomes
     logger.title('# Parsing GFF and fasta input files #')
     fasta_hash = fasta_parser.parse(fasta_filename=param.fasta_fname)
-    gff_data = gff_parser.parse(gff_fname=param.gff_fname, fasta_hash=fasta_hash)
 
+    gff_data = gff_parser.parse(gff_fname=param.gff_fname, fasta_hash=fasta_hash)
     sys.exit(0)
 
     # checking if type(s) given in argument is(are) valid

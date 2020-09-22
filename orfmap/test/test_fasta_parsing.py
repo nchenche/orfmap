@@ -164,6 +164,8 @@ def test_sequence(fasta, chr_index):
 fasta_indexes = fasta_parse(fasta_filename)
 for index in fasta_indexes:
     print(index.resume())
+
+# print({ x.chr: x for x in fasta_indexes })
 # fasta_safe = Fasta(fasta_filename)
 # test_getlines(fasta, chr_indexes[0])
 # test_sequence(fasta, chr_indexes[0])
@@ -193,4 +195,3 @@ for index in fasta_indexes:
 #
 # if __name__ == '__main__':
 #     unittest.main()
-

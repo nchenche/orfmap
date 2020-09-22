@@ -99,8 +99,7 @@ class Fasta_hash():
             - start (int):  coordinate of the first nucleotide in the sequence
             - end (int):    coordinate of the last nucleotide in the sequence
             - strand ('+' or '-'):  strand of the nucleotide sequence
-            - phase (0, 1 or2): number of nucleotide to "remove" in the first 
-                                codon (http://gmod.org/wiki/GFF#Nesting_Features)
+            - phase (0, 1 or2): number of nucleotide to "remove" in the first codon (http://gmod.org/wiki/GFF#Nesting_Features)
                             
         Returns:
             - seq (str)
@@ -223,8 +222,7 @@ class Fasta_hash():
             - start (int):          coordinate of the first nucleotide in the sequence
             - end (int):            coordinate of the last nucleotide in the sequence
             - strand ('+' or '-'):  strand of the nucleotide sequence
-            - phase (0, 1 or 2):    number of nucleotide to "remove" in the starting 
-                                    codon (http://gmod.org/wiki/GFF#Nesting_Features)
+            - phase (0, 1 or 2):    number of nucleotide to "remove" in the starting codon (http://gmod.org/wiki/GFF#Nesting_Features)
                             
         Returns:
             - protein_sequence (str)
@@ -247,6 +245,226 @@ class Fasta_hash():
 
         return protein_sequence
         
+class Fasta:
+    """
+
+    Class used to read/get informations of a chromosome from a genomic fasta file
+
+    """
+
+    base_complement = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G'}
+
+    def __init__(self):
+        """
+
+        All key index file positions to read a chromosome from a genomic fasta file.
+
+        fasta_fname (str): fasta filename
+        chr: chromosome id (str)
+        curpos_start: index file position of the first nucleotide (int)
+        curpos_end: index file position of the last nucleotide (int)
+        seq_len: length of a nucleotide line in the fasta file (int)
+        line_len: length of a nucleotide line with extra-characters (int)
+        off_char: difference between seq_len and line_len (int)
+
+        """
+        self.fasta_fname = None
+        self.chr = None
+        self.curpos_start = None
+        self.curpos_end = None
+        self.seq_len = None
+        self.line_len = None
+        self.off_char = None
+        self.nucid_max = None
+
+    def _init_nucid_max(self):
+        """
+
+        Returns the last nucleotide ID position of the chromosome.
+
+        Returns:
+            object: int
+
+        """
+        len_pos = self.curpos_end - self.curpos_start + 1
+        n_line = int(len_pos / self.line_len)
+
+        self.nucid_max = n_line * self.seq_len + len_pos % self.line_len
+
+    def sequence(self, start=1, end=5, phase=0, strand='+'):
+        """
+
+        Returns the sequence corresponding to the given coordinates.
+        The start position must be at least 1. The end position must not exceed nucid_max.
+
+        Args:
+            start (int): start position of the desired sequence
+            end (int): end position of the desired sequence (int)
+            phase (int): number of nucleotide to "remove" in the first codon (0, 1 or 2)
+            (http://gmod.org/wiki/GFF#Nesting_Features)
+            strand (str): strand of the nucleotide sequence ('+' or '-')
+
+        Returns:
+            object: str
+
+        """
+        start = start if start >= 1 else 1
+        end = end if end <= self.nucid_max else self.nucid_max
+
+        line_start = self.get_line_nucindex(index=start)
+        line_end = self.get_line_nucindex(index=end)
+        lines = self.get_lines(_from=line_start, to=line_end)
+
+        len_sequence = end - start + 1
+        start_pos = start%self.seq_len if start%self.seq_len else self.seq_len
+        end_pos = start_pos - 1 + len_sequence
+
+        if strand == '+':
+            return ''.join(lines)[start_pos - 1 + phase:end_pos]
+        else:
+            return self.reverse_complement(''.join(lines)[start_pos - 1:end_pos - phase])
+
+    def get_line_nucindex(self, index=1):
+        """
+
+        Defines the line position where to find a given nucleotide index
+
+        Args:
+            index: nucleotide number (int)
+
+        Returns:
+            line_idx: line position where to find the nucleotide (int)
+
+        """
+        line_idx_raw = index / (self.seq_len)
+        line_idx = int(line_idx_raw) if line_idx_raw % 1 == 0 else int(line_idx_raw) + 1
+
+        return line_idx
+
+    def get_lines(self, _from=1, to=1):
+        """
+
+        Returns all lines included between the given indexes
+
+        Args:
+            _from: index of the desired starting line (int)
+            to: index of the desired last line (int)
+
+        Returns:
+            lines: a list of strings
+
+        """
+        n_lines = to - _from + 1
+        lines = []
+        with open(self.fasta_fname, 'rb') as fasta_file:
+            fasta_file.seek(self.curpos_start + self.line_len * (_from-1))
+            for n in range(n_lines):
+                lines.append(fasta_file.readline().decode().strip())
+
+        return lines
+
+    def reverse_complement(self, sequence: str) -> str:
+        """
+
+        Returns the reverse complementary sequence of a given nucleotide sequence
+
+        Arguments:
+            - sequence: nucleotide sequence (str)
+
+        Returns:
+            object: str
+
+        """
+        sequence = list(sequence)
+        sequence.reverse()
+
+        return ''.join([self.base_complement[x.upper()] for x in sequence])
+
+    def translate(self, start=1, end=10, strand='+', phase=0):
+        """
+
+        Translates a nucleotide sequence from its coordinates
+
+        Arguments:
+            start (int): start position of the desired sequence
+            end (int): end position of the desired sequence (int)
+            phase (int): number of nucleotide to "remove" in the first codon (0, 1 or 2)
+            (http://gmod.org/wiki/GFF#Nesting_Features)
+            strand (str): strand of the nucleotide sequence ('+' or '-')
+
+        Returns:
+            - object: str
+
+        """
+
+        if isinstance(phase, int):
+            offset = (3 - ((end - start + 1 - phase) % 3)) % 3
+
+            if strand == '+':
+                end = end + offset if end + offset <= self.nucid_max else end
+            elif strand == '-':
+                start = start - offset if start - offset > 0 else start
+
+        else:
+            phase = 0
+
+        sequence = self.sequence(start=start, end=end, phase=phase, strand=strand)
+        codons = [sequence[i:i + 3] for i in range(0, len(sequence), 3)]
+
+        return ''.join([Genecode[x.upper()] for x in codons if len(x) == 3])
+
+    def index_resume(self):
+        """
+
+        A formatted string describing all key index positions stored.
+
+        Returns:
+            object: str
+
+        """
+        tab = '{:12}' * 7
+        return tab.format(self.chr, self.curpos_start, self.curpos_end,
+                                       self.seq_len, self.line_len, self.off_char, self.nucid_max)
+
+
+def parse_fasta(fasta_filename):
+    """
+    Reads a fasta file and stores key index positions to parse it without the need to store the whole file in memory.
+
+    Args:
+        fasta_filename: fasta filename (str)
+
+    Returns:
+        A list of FastaIndex instances.
+
+    """
+
+    chr_indexes = []
+    with open(fasta_filename, 'rb') as fasta_file:
+        for line in fasta_file:
+            if line.startswith(b'>'):
+                chr_index = Fasta()
+                chr_index.fasta_fname = fasta_filename
+                chr_index.chr = line.decode().strip().split('>')[-1]
+                chr_index.curpos_start = fasta_file.tell()
+
+                seqline = fasta_file.readline()
+                chr_index.line_len = len(seqline)
+                chr_index.seq_len = len(seqline.decode().strip())
+                chr_index.off_char = chr_index.line_len - chr_index.seq_len
+                fasta_file.seek(-len(seqline), 1)
+
+                if chr_indexes:
+                    chr_indexes[-1].curpos_end = chr_index.curpos_start - len(line) - chr_index.off_char - 1
+                    chr_indexes[-1]._init_nucid_max()
+
+                chr_indexes.append(chr_index)
+
+        chr_indexes[-1].curpos_end = fasta_file.tell() - chr_indexes[-1].off_char - 1
+        chr_indexes[-1]._init_nucid_max()
+
+    return { x.chr: x for x in chr_indexes }
+
 
 def fasta_descriptors(fasta_fname):
     """
@@ -330,5 +548,4 @@ def parse(fasta_filename):
     fasta_hash = {}
     for descriptor in fasta_descriptor:
         fasta_hash[descriptor['header_id']] = Fasta_hash(descriptor)
-        print(descriptor)
     return fasta_hash
