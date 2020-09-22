@@ -108,7 +108,7 @@ class GffElement:
 
     def sequence(self):
         phase = 0 if not isinstance(self.phase, int) else self.phase
-        return self.fasta_chr.get_seq(start=self.start, end=self.end,
+        return self.fasta_chr.sequence(start=self.start, end=self.end,
                                  strand=self.strand, phase=phase)
 
     def translate(self):
@@ -357,11 +357,11 @@ class Chromosome():
         return set([ x.type for x in self.gff_elements ])
         
     def sequence(self):
-        return self.fasta_chr.get_seq(start=self.start, end=self.end,
+        return self.fasta_chr.sequence(start=self.start, end=self.end,
                                       strand='+', phase=0)
                                       
     def rev_comp(self):
-        return self.fasta_chr.rev_comp(self.sequence())
+        return self.fasta_chr.reverse_complement(self.sequence())
 
 
 def get_overlap(orf_coors=(), other_coors=None):
