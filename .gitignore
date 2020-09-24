@@ -2,6 +2,7 @@
 # Orfmap data            #
 ##########################
 orfmap/data/*
+orfmap/check_cds*
 
 ##########################
 # Python complied source #
