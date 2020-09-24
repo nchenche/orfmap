@@ -141,9 +141,9 @@ class GffElement:
             gff_line += ';color=' + self.color
 
             if self.ovp_phased:
-                gff_line += ';Ovp_with=' + '|'.join([ x.format_id() for x in self.ovp_phased ])
+                gff_line += ';Ovp_with=' + '|'.join([ x._id for x in self.ovp_phased ])
             elif self.ovp_unphased:
-                gff_line += ';Ovp_with=' + '|'.join([ x.format_id() for x in self.ovp_unphased])
+                gff_line += ';Ovp_with=' + '|'.join([ x._id for x in self.ovp_unphased])
 
             if self.suborfs:
                 gff_line += '\n'
@@ -198,12 +198,12 @@ class GffElement:
                          str(self.frame), self.type])
 
     def _set_parent(self):
-        if self.ovp_phased:
-            self.parent = '|'.join([x._id for x in self.ovp_phased])
-        elif self.ovp_unphased:
-            self.parent = '|'.join([x._id for x in self.ovp_unphased])
-        else:
-            self.parent = self.seqid+'_'+'1-'+str(self.len_chr)
+        # if self.ovp_phased:
+        #     self.parent = '|'.join([x._id for x in self.ovp_phased])
+        # elif self.ovp_unphased:
+        #     self.parent = '|'.join([x._id for x in self.ovp_unphased])
+        # else:
+        self.parent = self.seqid+'_'+'1-'+str(self.len_chr)
 
     def _set_color(self):
         if self.type == 'c_CDS':
@@ -237,6 +237,7 @@ class GffElement:
                     suborf.status = 'non-coding'
                     suborf.color = '#ffc100' #D67229
                     suborf._id = suborf.format_id()
+                    suborf.parent = self.format_id()
                     self.suborfs.append(suborf)
                 if self.end - element.get_coors()[1]+1 + 1 >= 60:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
@@ -246,6 +247,7 @@ class GffElement:
                     suborf.status = 'non-coding'
                     suborf.color = '#ffc100'
                     suborf._id = suborf.format_id()
+                    suborf.parent = self.format_id()
                     self.suborfs.append(suborf)
             else:
                 if self.end - element.get_coors()[1]+1 + 1 >= 60:
@@ -256,6 +258,7 @@ class GffElement:
                     suborf.status = 'non-coding'
                     suborf.color = '#ffc100'
                     suborf._id = suborf.format_id()
+                    suborf.parent = self.format_id()
                     self.suborfs.append(suborf)
                 if element.get_coors()[0]-1 - self.start + 1 >= 60:
                     suborf = GffElement(gff_line=gff_line, fasta_chr=self.fasta_chr)
@@ -265,6 +268,7 @@ class GffElement:
                     suborf.status = 'non-coding'
                     suborf.color = '#ffc100'
                     suborf._id = suborf.format_id()
+                    suborf.parent = self.format_id()
                     self.suborfs.append(suborf)
 
 

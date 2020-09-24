@@ -37,15 +37,15 @@ class Fasta:
     def __init__(self):
         """
 
-        All key index file positions to read a chromosome from a genomic fasta file.
+        All key index file positions necessary to read a chromosome from a genomic fasta file.
 
         fasta_fname (str): fasta filename
-        chr: chromosome id (str)
-        curpos_start: index file position of the first nucleotide (int)
-        curpos_end: index file position of the last nucleotide (int)
-        seq_len: length of a nucleotide line in the fasta file (int)
-        line_len: length of a nucleotide line with extra-characters (int)
-        off_char: difference between seq_len and line_len (int)
+        chr (str): chromosome id
+        curpos_start (int): index file position of the first nucleotide
+        curpos_end (int): index file position of the last nucleotide
+        seq_len (int): length of a nucleotide line in the fasta file
+        line_len (int): length of a nucleotide line with extra-characters
+        off_char (int): difference between seq_len and line_len
 
         """
         self.fasta_fname = None
