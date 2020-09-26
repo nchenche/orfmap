@@ -22,6 +22,8 @@ def main():
     param = parameters.Param(args=parameters.get_args())
     logger = logHandler.Logger(name='main', outpath=param.outpath)
     logo(logger)
+    param.description()
+    # sys.exit(0)
 
     # parses fasta & gff by chromosomes
     logger.title('# Parsing GFF and fasta input files #')
@@ -31,7 +33,7 @@ def main():
     # checking if type(s) given in argument is(are) valid
     inspect.check_types(gff_data=gff_data, types=param.types)
 
-    # ORFs mapping
+    # ORFs mapping (scans genome for stop-to-stop sequences and assigns them a status)
     logger.title('# Mapping ORFs (stop-to-stop codons) #')
     all_orfs = orfmap.mapping(gff_data=gff_data, fasta_hash=fasta_hash, param=param)
 

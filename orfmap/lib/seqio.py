@@ -1,7 +1,7 @@
 import os
 
 
-def write_orfs(all_orfs=[], param=None):
+def write_orfs(all_orfs: list, param=None):
     """
     Writes fasta and gff files for orfs.
 
@@ -22,3 +22,29 @@ def write_orfs(all_orfs=[], param=None):
             for orf in all_orfs:
                 out_gff.write(orf.get_gffline())
                 out_fasta.write(orf.get_fastaline())
+
+
+def is_orf_asked(orf=None, param=None):
+    if 'all' in param.include:
+        if not param.exclude:
+            return True
+        else:
+            if not is_orf_exclude(orf=orf, exclude=param.exclude):
+                return True
+            else:
+                return False
+    else:
+        if is_orf_include(orf=orf, include=param.include):
+            if not is_orf_exclude(orf=orf, exclude=param.exclude):
+                return True
+            else:
+                return False
+        else:
+            return False
+
+def is_orf_include(orf=None, include=None):
+    return True in [x in [orf.type, orf.status] for x in include]
+
+def is_orf_exclude(orf=None, exclude=None):
+    return True in [x in [orf.type, orf.status] for x in exclude]
+

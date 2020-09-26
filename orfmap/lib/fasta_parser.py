@@ -37,7 +37,8 @@ class Fasta:
     def __init__(self):
         """
 
-        All key index file positions necessary to read a chromosome from a genomic fasta file.
+        All key index file positions necessary to read a chromosome from a genomic fasta file
+        without the need to store it in memory.
 
         fasta_fname (str): fasta filename
         chr (str): chromosome id
@@ -48,7 +49,7 @@ class Fasta:
         off_char (int): difference between seq_len and line_len
 
         """
-        self.fasta_fname = None
+        self.fasta_fname: str
         self.chr = None
         self.curpos_start = None
         self.curpos_end = None

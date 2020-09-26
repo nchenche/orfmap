@@ -141,9 +141,9 @@ class GffElement:
             gff_line += ';color=' + self.color
 
             if self.ovp_phased:
-                gff_line += ';Ovp_with=' + '|'.join([ x._id for x in self.ovp_phased ])
+                gff_line += ';Ovp_with=' + '|'.join([ x.name for x in self.ovp_phased ])
             elif self.ovp_unphased:
-                gff_line += ';Ovp_with=' + '|'.join([ x._id for x in self.ovp_unphased])
+                gff_line += ';Ovp_with=' + '|'.join([ x.name for x in self.ovp_unphased])
 
             if self.suborfs:
                 gff_line += '\n'
@@ -395,7 +395,7 @@ def get_overlap(orf_coors=(), other_coors=None):
 
 
 def get_orfs(gff_chr, orf_len=60):
-    orfs = []              
+    orfs = []
     sequence = gff_chr.sequence()
     pos = 0
 
@@ -403,11 +403,11 @@ def get_orfs(gff_chr, orf_len=60):
     for frame in range(3):
         # list of codons in frame "frame"
         codons = [ sequence[i:i+3].upper() for i in range(frame, len(sequence), 3) if len(sequence[i:i+3]) == 3]
-    
+
         start_pos = frame + 1
         end_pos = None
         
-        frame_rev = (gff_chr.end%3 - frame) % 3
+        frame_rev = (gff_chr.end % 3 - frame) % 3
         start_pos_rev = None
         end_pos_rev = None
        
