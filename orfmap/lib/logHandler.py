@@ -76,16 +76,6 @@ def get_config(outpath='./'):
           "mode": "w+",
           "encoding": "utf8",
           "delay": False
-        },
-
-        "summary_handler": {
-          "class": "logging.FileHandler",
-          "level": "INFO",
-          "formatter": "simple",
-          "filename": outpath+"summary.log",
-          "mode": "w+",
-          "encoding": "utf8",
-          "delay": False
         }
       },
 
