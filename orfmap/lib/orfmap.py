@@ -13,9 +13,11 @@ def mapping(gff_data, fasta_hash, param):
 
         logger.info(' - ORF mapping and assignment')
         orfs = get_orfs(gff_chr=gff_chr, param=param)
+        logger.info('')
 
         for orf in sorted(orfs, key=lambda x: (x.seqid, x.start)):
-            all_orfs.append(orf)
+            if is_orf_asked(orf=orf, param=param):
+                all_orfs.append(orf)
 
     return all_orfs
 
@@ -99,6 +101,7 @@ def assignment(orfs, gff_chr, param):
     check_ovp(orf=orf, elements=elements, co_ovp=param.co_ovp)
     set_attributes(orfs=orfs, orf_len=param.orf_len)
 
+
 def check_ovp(orf, elements, co_ovp=0.7):
     """
 
@@ -126,6 +129,7 @@ def check_ovp(orf, elements, co_ovp=0.7):
                         if orf_ovp > orf_ovp_max:
                             orf_ovp_max = orf_ovp
                             orf.ovp_unphased.append(element)
+
 
 def set_attributes(orfs, orf_len):
     orf = orfs[-1]
@@ -199,3 +203,30 @@ def is_3ter_ok(orf, element, orf_len=60):
         return orf.end - element.get_coors()[1] + 1 + 1 >= orf_len
     else:
         return element.get_coors()[0] - 1 - orf.start + 1 >= orf_len
+
+
+def is_orf_asked(orf=None, param=None):
+    if 'all' in param.include:
+        if not param.exclude:
+            return True
+        else:
+            if not is_orf_exclude(orf=orf, exclude=param.exclude):
+                return True
+            else:
+                return False
+    else:
+        if is_orf_include(orf=orf, include=param.include):
+            if not is_orf_exclude(orf=orf, exclude=param.exclude):
+                return True
+            else:
+                return False
+        else:
+            return False
+
+
+def is_orf_include(orf=None, include=None):
+    return True in [x in [orf.type, orf.status] for x in include]
+
+
+def is_orf_exclude(orf=None, exclude=None):
+    return True in [x in [orf.type, orf.status] for x in exclude]
