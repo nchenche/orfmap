@@ -22,8 +22,8 @@ class Param:
         if 'CDS' not in args.type:
             args.type.append('CDS')
         self.types = list(set(args.type))
-        # self.include = args.o_include
-        # self.exclude = args.o_exclude
+        self.include = args.o_include
+        self.exclude = args.o_exclude
         self.orf_len = args.orf_len
         self.co_ovp = args.co_ovp
 
@@ -47,8 +47,8 @@ class Param:
         logger.info('- fasta filename: ' + self.fasta_fname)
         logger.info('- gff filename: ' + self.gff_fname)
         logger.info('- types: ' + ', '.join(self.types))
-        # txt += '- o_include: ' + ', '.join(self.include) + '\n'
-        # txt += '- o_exclude: ' + ', '.join(self.exclude) + '\n'
+        logger.info('- o_include: ' + ', '.join(self.include))
+        logger.info('- o_exclude: ' + ', '.join(self.exclude))
         logger.info('- orf_len: ' + str(self.orf_len))
         logger.info('- co_ovp : ' + str(self.co_ovp))
         logger.info('- outfile: ' + self.outfile)
@@ -67,10 +67,10 @@ def get_args():
                         help="GFF annotation file (.gff)")
     parser.add_argument("-type", required=False, nargs="+", default=['CDS'],
                         help="Type feature(s) a flag is desired for ('CDS' in included by default).")
-    # parser.add_argument("-o_include", required=False, nargs="+", default=['all'],
-    #                     help="Type feature(s) and/or Status attribute(s) desired to be written in the output (all by default).")
-    # parser.add_argument("-o_exclude", required=False, nargs="+", default=[],
-    #                     help="Type feature(s) and/or Status attribute(s) desired to be excluded (None by default).")
+    parser.add_argument("-o_include", required=False, nargs="+", default=['all'],
+                        help="Type feature(s) and/or Status attribute(s) desired to be written in the output (all by default).")
+    parser.add_argument("-o_exclude", required=False, nargs="+", default=[],
+                        help="Type feature(s) and/or Status attribute(s) desired to be excluded (None by default).")
     parser.add_argument("-orf_len", required=False, nargs="?", default=60, type=int,
                         help="Minimum number of nucleotides required to define a sequence between two consecutive stop codons\
                          as an ORF sequence (60 nucleotides by default).")

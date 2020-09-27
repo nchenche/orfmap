@@ -19,7 +19,7 @@ def write_orfs(all_orfs: list, param=None):
         header += '# Input gff file: {}\n'.format(os.path.basename(param.gff_fname))
         out_gff.write(header)
         with open(param.outfile + '.fa', "w") as out_fasta:
-            for orf in all_orfs:
+            for orf in [ x for x in all_orfs if is_orf_asked(orf=x, param=param)]:
                 out_gff.write(orf.get_gffline())
                 out_fasta.write(orf.get_fastaline())
 
