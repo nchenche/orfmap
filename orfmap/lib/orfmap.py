@@ -17,7 +17,7 @@ def mapping(gff_data, fasta_hash, param):
         logger.info(' - Assigning status for all {} ORFs found'.format(len(orfs)))
         logger.info('')
         for orf in sorted(orfs, key=lambda x: (x.seqid, x.start)):
-            # elements are defined genomic sequences used as a reference to assign (non-)overlapping ORFs (CDS by default)
+            # elements are defined genomic sequences used as a reference (CDS by default) to assign a status to ORFs
             elements = gff_chr.get_elements(coors=orf.get_coors(), types=param.types)
             orf.assignment(elements, co_ovp=param.co_ovp)
             all_orfs.append(orf)
