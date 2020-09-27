@@ -116,14 +116,17 @@ class GffElement:
     def get_fastaline(self):
         fastaline = '>'+self._id+'\n'+self.translate()+'\n'
 
-        if self.suborfs:
-            for suborf in self.suborfs:
-                fastaline += suborf.get_fastaline()
+        # if self.suborfs:
+        #     for suborf in self.suborfs:
+        #         fastaline += suborf.get_fastaline()
         return fastaline
 
     def get_gffline(self, param=None):
         if self.gff_line and self.type not in ['nc_5-CDS', 'nc_3-CDS']:
             return '\t'.join(self.gff_line)
+
+        # if self.gff_line:
+        #     return '\t'.join(self.gff_line)
         else:
             gff_line = self.seqid
             gff_line += '\t'+self.source
@@ -143,12 +146,12 @@ class GffElement:
             elif self.ovp_unphased:
                 gff_line += ';Ovp_with=' + '|'.join([x.name for x in self.ovp_unphased])
 
-            if self.suborfs:
-                gff_line += '\n'
-                for suborf in self.suborfs:
-                    gff_line += suborf.get_gffline()
+            # if self.suborfs:
+            #     gff_line += '\n'
+            #     for suborf in self.suborfs:
+            #         gff_line += suborf.get_gffline()
 
-            return gff_line + '\n' if not self.suborfs else gff_line
+            return gff_line + '\n'  # if not self.suborfs else gff_line
 
     def assignment(self, elements, co_ovp):
         self.check_ovp(elements, co_ovp)
