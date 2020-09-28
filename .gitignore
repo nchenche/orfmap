@@ -2,7 +2,7 @@
 # Orfmap data            #
 ##########################
 orfmap/data/*
-orfmap/check_cds*
+
 
 
 ##########################
@@ -21,4 +21,4 @@ doc/_build/
 ################# 
 # pycharm files #
 #################
-\.idea
+**/.idea
