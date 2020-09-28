@@ -4,9 +4,13 @@ ORFMap
 ORFMap - A tool aimed at scanning a genome for stop-codons delimited sequences (ORFs) and annotating them.
 
 
-| test | test |
+| ORF annotation | Condition |
 | --- | --- |
-| test | test |
+| c_CDS |if the ORF overlap with a CDS in the same phase |
+| nc_5-CDS | if the 5' extremity of the c_CDS is at least 60 nucleotides long |
+| nc_3-CDS | if the 3' extremity of the c_CDS is at least 60 nucleotides long |
+| nc_ovp-CDS | if the ORF overlap with a CDS in a different phase |
+| nc_intergenic | if the ORF do not overlap with anything |
 
 Description
 -----------
