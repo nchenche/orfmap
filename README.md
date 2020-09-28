@@ -5,6 +5,7 @@ ORFMap - A tool aimed at scanning a genome for stop-codons delimited sequences (
 
 
 | test | test |
+| --- | --- |
 | test | test |
 
 Description
