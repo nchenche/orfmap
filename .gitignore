@@ -4,8 +4,9 @@
 orfmap/data/*
 orfmap/check_cds*
 
+
 ##########################
-# Python complied source #
+# Python compiled source #
 ##########################
 *\.pyc
 *\.pyo
@@ -13,4 +14,11 @@ build/
 dist/
 doc/_build/
 
-*\__pycache__
+**__pycache__**
+
+
+
+################# 
+# pycharm files #
+#################
+\.idea
