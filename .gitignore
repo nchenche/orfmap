@@ -14,11 +14,12 @@ build/
 dist/
 doc/_build/
 
-**__pycache__**
+orfmap/__pycache__/
+**/lib/__pycache__/
 
 
 
 ################# 
 # pycharm files #
 #################
-**/.idea
+orfmap/.idea/
