@@ -195,9 +195,17 @@ class Fasta:
 
         sequence = self.sequence(start=start, end=end, phase=phase, strand=strand)
 
+        protein = ''
         codons = [sequence[i:i + 3] for i in range(0, len(sequence), 3)]
 
-        return ''.join([Genecode[x.upper()] for x in codons if len(x) == 3])
+        for codon in codons:
+            if codon.upper() not in Genecode.keys():
+                protein += 'X'
+            else:
+                protein += Genecode[codon.upper()]
+
+        return protein
+        # return ''.join([Genecode[x.upper()] for x in codons if len(x) == 3])
 
     def index_resume(self):
         """

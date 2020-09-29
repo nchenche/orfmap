@@ -1,30 +1,45 @@
+import os
 from orfmap.lib import logHandler
 from orfmap.lib import gff_parser
+from orfmap.lib import seqio
+
 
 logger = logHandler.Logger(name=__name__)
 
 
 def mapping(gff_data, fasta_hash, param):
 
-    all_orfs = []
-    for chr_id in sorted(gff_data):
-        logger.info('Reading chromosome {} ...'.format(chr_id))
-        gff_chr = gff_data[chr_id]
+    if os.path.exists(param.outfile + '.gff'):
+        os.remove(param.outfile + '.gff')
+    if os.path.exists(param.outfile + '.fa'):
+        os.remove(param.outfile + '.fa')
 
-        logger.info(' - ORF mapping and assignment')
-        orfs = get_orfs(gff_chr=gff_chr, param=param)
-        logger.info('')
+    with open(param.outfile + '.gff', "a+") as out_gff:
+        header = '# Input genomic fasta file: {}\n'.format(os.path.basename(param.fasta_fname))
+        header += '# Input gff file: {}\n'.format(os.path.basename(param.gff_fname))
+        out_gff.write(header)
+        with open(param.outfile + '.fa', "a+") as out_fasta:
 
-        for orf in sorted(orfs, key=lambda x: (x.seqid, x.start)):
-            if is_orf_asked(orf=orf, param=param):
-                all_orfs.append(orf)
+            all_orfs = []
+            for chr_id in sorted(gff_data):
+                logger.info('Reading chromosome {} ...'.format(chr_id))
+                gff_chr = gff_data[chr_id]
+
+                logger.info(' - ORF mapping and assignment')
+                get_orfs(gff_chr=gff_chr, param=param, outfiles=[out_gff, out_fasta])
+                logger.info('')
+
+                # for orf in sorted(orfs, key=lambda x: (x.seqid, x.start)):
+                #     if is_orf_asked(orf=orf, param=param):
+                #         all_orfs.append(orf)
 
     return all_orfs
 
 
-def get_orfs(gff_chr, param):
+def get_orfs(gff_chr, param, outfiles=[]):
+    out_gff = outfiles[0]
+    out_fasta = outfiles[1]
     orf_len = param.orf_len
-    orfs = []
     sequence = gff_chr.sequence()
     pos = 0
 
@@ -53,9 +68,14 @@ def get_orfs(gff_chr, param):
                     else:
                         orf.start = start_pos + 3
                     orf.end = end_pos
-                    orfs.append(orf)
-                    assignment(orfs=orfs, gff_chr=gff_chr, param=param)
 
+                    suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
+                    out_gff.write(orf.get_gffline())
+                    out_fasta.write(orf.get_fastaline())
+                    if suborfs:
+                        for suborf in suborfs:
+                            out_gff.write(suborf.get_gffline())
+                            out_fasta.write(suborf.get_fastaline())
 
                 start_pos = end_pos - 2
 
@@ -72,8 +92,14 @@ def get_orfs(gff_chr, param):
                         orf.frame = frame_rev
                         orf.start = start_pos_rev
                         orf.end = end_pos_rev - 3
-                        orfs.append(orf)
-                        assignment(orfs=orfs, gff_chr=gff_chr, param=param)
+
+                        suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
+                        out_gff.write(orf.get_gffline())
+                        out_fasta.write(orf.get_fastaline())
+                        if suborfs:
+                            for suborf in suborfs:
+                                out_gff.write(suborf.get_gffline())
+                                out_fasta.write(suborf.get_fastaline())
 
                     start_pos_rev = end_pos_rev - 2
 
@@ -89,17 +115,22 @@ def get_orfs(gff_chr, param):
                 orf.frame = frame_rev
                 orf.start = start_pos_rev
                 orf.end = end_pos_rev
-                orfs.append(orf)
-                assignment(orfs=orfs, gff_chr=gff_chr, param=param)
 
-    return orfs
+                suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
+                out_gff.write(orf.get_gffline())
+                out_fasta.write(orf.get_fastaline())
+                if suborfs:
+                    for suborf in suborfs:
+                        out_gff.write(suborf.get_gffline())
+                        out_fasta.write(suborf.get_fastaline())
 
 
-def assignment(orfs, gff_chr, param):
-    orf = orfs[-1]
+def assignment(orf, gff_chr, param):
     elements = gff_chr.get_elements(coors=orf.get_coors(), types=param.types)
     check_ovp(orf=orf, elements=elements, co_ovp=param.co_ovp)
-    set_attributes(orfs=orfs, orf_len=param.orf_len)
+    suborfs = set_attributes(orf=orf, orf_len=param.orf_len)
+
+    return suborfs
 
 
 def check_ovp(orf, elements, co_ovp=0.7):
@@ -131,8 +162,8 @@ def check_ovp(orf, elements, co_ovp=0.7):
                             orf.ovp_unphased.append(element)
 
 
-def set_attributes(orfs, orf_len):
-    orf = orfs[-1]
+def set_attributes(orf, orf_len):
+    suborfs = []
     orf._set_type()
     orf._id = orf.format_id()
     orf._set_parent()
@@ -140,10 +171,11 @@ def set_attributes(orfs, orf_len):
     orf._set_status()
 
     if orf.ovp_phased:
-        get_suborfs(orfs=orfs, orf_len=orf_len)
+        suborfs = get_suborfs(orf=orf, orf_len=orf_len)
 
+    return suborfs
 
-def get_suborfs(orfs, orf_len):
+def get_suborfs(orf, orf_len):
     """
 
     Checks if the sequence extremities of an ORF overlapping with a CDS are long enough to be considered as nc_ORF.
@@ -157,39 +189,45 @@ def get_suborfs(orfs, orf_len):
         None
 
     """
-    orf = orfs[-1]
     gff_line = orf.get_gffline()
-    suborf = None
+    suborf_5ter = None
+    suborf_3ter = None
+    suborfs = []
+
     for element in orf.ovp_phased:
-        is_ter = False
         if is_5ter_ok(orf, element, orf_len=orf_len):
-            is_ter = True
-            suborf = gff_parser.GffElement(gff_line=gff_line, fasta_chr=orf.fasta_chr)
-            suborf.type = 'nc_5-CDS'
+            suborf_5ter = gff_parser.GffElement(gff_line=gff_line, fasta_chr=orf.fasta_chr)
+            suborf_5ter.type = 'nc_5-CDS'
 
             if orf.strand == '+':
-                suborf.end = element.get_coors()[0] - 1
+                suborf_5ter.end = element.get_coors()[0] - 1
             else:
-                suborf.start = element.get_coors()[1] + 1
+                suborf_5ter.start = element.get_coors()[1] + 1
+
+            suborf_5ter.frame = orf.frame
+            suborf_5ter.status = 'non-coding'
+            suborf_5ter.color = '#ffc100'
+            suborf_5ter._id = suborf_5ter.format_id()
+            suborf_5ter.parent = orf.format_id()
+            suborfs.append(suborf_5ter)
 
         if is_3ter_ok(orf, element, orf_len=orf_len):
-            is_ter = True
-            suborf = gff_parser.GffElement(gff_line=gff_line, fasta_chr=orf.fasta_chr)
-            suborf.type = 'nc_3-CDS'
+            suborf_3ter = gff_parser.GffElement(gff_line=gff_line, fasta_chr=orf.fasta_chr)
+            suborf_3ter.type = 'nc_3-CDS'
 
             if orf.strand == '+':
-                suborf.start = element.get_coors()[1] + 1
+                suborf_3ter.start = element.get_coors()[1] + 1
             else:
-                suborf.end = element.get_coors()[0] - 1
+                suborf_3ter.end = element.get_coors()[0] - 1
 
-        if is_ter:
-            suborf.frame = orf.frame
-            suborf.status = 'non-coding'
-            suborf.color = '#ffc100'
-            suborf._id = suborf.format_id()
-            suborf.parent = orf.format_id()
-            orfs.append(suborf)
+            suborf_3ter.frame = orf.frame
+            suborf_3ter.status = 'non-coding'
+            suborf_3ter.color = '#ffc100'
+            suborf_3ter._id = suborf_3ter.format_id()
+            suborf_3ter.parent = orf.format_id()
+            suborfs.append(suborf_3ter)
 
+    return suborfs
 
 def is_5ter_ok(orf, element, orf_len=60):
     if orf.strand == '+':

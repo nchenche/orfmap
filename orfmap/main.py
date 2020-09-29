@@ -43,8 +43,8 @@ def main():
     all_orfs = orfmap.mapping(gff_data=gff_data, fasta_hash=fasta_hash, param=param)
 
     # writes outputs
-    logger.title('# Writing GFF and fasta output files #')
-    seqio.write_orfs(all_orfs=all_orfs, param=param)
+    # logger.title('# Writing GFF and fasta output files #')
+    # seqio.write_orfs(all_orfs=all_orfs, param=param)
 
 
 def logo(logger):
