@@ -41,6 +41,7 @@ def main():
     logger.title('# Writing GFF and fasta output files #')
     seqio.write_orfs(all_orfs=all_orfs, param=param)
 
+
 def logo(logger):
     logger.info('')
     logger.info('   ___    ___   ___   __  __               ')
@@ -48,7 +49,6 @@ def logo(logger):
     logger.info(' | (_) | |   / | _|  | |\/| | / _` | | ')
     logger.info('  \___/  |_|_\ |_|   |_|  |_| \__,_| | .__/')
     logger.info('                                     |')
-
 
 
 if __name__ == '__main__':

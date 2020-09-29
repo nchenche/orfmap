@@ -54,6 +54,7 @@ class Param:
         logger.info('- outfile: ' + self.outfile)
         logger.info('')
 
+
 def get_args():
     """
     Returns:
