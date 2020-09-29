@@ -35,7 +35,7 @@ class Fasta:
 
     """
 
-    base_complement = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G'}
+    base_complement = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G', 'N': 'N', 'R': 'Y', 'Y': 'R'}
 
     def __init__(self):
         """
