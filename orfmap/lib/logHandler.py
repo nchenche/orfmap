@@ -70,7 +70,7 @@ def get_config(outpath='./'):
 
         "info_handler": {
           "class": "logging.FileHandler",
-          "level": "DEBUG",
+          "level": "INFO",
           "formatter": "detailed",
           "filename": outpath+"info.log",
           "mode": "w+",

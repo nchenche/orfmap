@@ -4,6 +4,9 @@ Created on Sun Jul 12 16:59:14 2020
 
 @author: nicolas
 """
+from orfmap.lib import logHandler
+
+logger = logHandler.Logger(name=__name__)
 
 
 Genecode = {'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
@@ -221,7 +224,7 @@ def parse(fasta_filename):
         A list of FastaIndex instances.
 
     """
-
+    logger.title('# Parsing fasta file')
     chr_indexes = []
     with open(fasta_filename, 'rb') as fasta_file:
         for line in fasta_file:
@@ -229,6 +232,7 @@ def parse(fasta_filename):
                 chr_index = Fasta()
                 chr_index.fasta_fname = fasta_filename
                 chr_index.chr = line.decode().strip().split('>')[-1].split()[0]
+                logger.debug('  - Reading chromosome: ' + chr_index.chr)
                 chr_index.curpos_start = fasta_file.tell()
 
                 seqline = fasta_file.readline()

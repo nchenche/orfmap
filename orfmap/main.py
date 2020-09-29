@@ -27,7 +27,7 @@ def main():
     # parses fasta & gff by chromosomes
     logger.title('# Parsing GFF and fasta input files #')
     fasta_hash = fasta_parser.parse(fasta_filename=param.fasta_fname)
-    gff_data = gff_parser.parse(gff_fname=param.gff_fname, fasta_hash=fasta_hash)
+    gff_data = gff_parser.parse(param=param, fasta_hash=fasta_hash)
 
     # if param.write_types:
     #     gff_data.write_types(outpath=param.outpath)

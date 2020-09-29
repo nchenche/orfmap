@@ -416,7 +416,14 @@ def set_gff_descr(gff_fname):
             line = gff_file.readline()
 
 
-def parse(gff_fname, fasta_hash, chr_id=None):
+def parse(param=None, fasta_hash=None, chr_id=None):
+    logger.title('# Parsing GFF file')
+
+    gff_fname = param.gff_fname
+    types = param.types
+    fasta_hash = fasta_hash
+    chr_id = chr_id
+
     if not GFF_DESCR:
         set_gff_descr(gff_fname)
 
@@ -438,11 +445,15 @@ def parse(gff_fname, fasta_hash, chr_id=None):
             chr_name = line.split()[0]
             while chr_name == chr_id:
                 if chr_name not in gff_data:
+                    logger.debug('  - Reading chromosome: ' + chr_name)
                     gff_data[chr_name] = Chromosome(_id=chr_name, fasta_chr=fasta_hash[chr_id])
                     chromosome = gff_data[chr_name]
                     chromosome.source = line.split()[1]
 
-                chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
+                element_type = line.split()[2]
+                if element_type in types:
+                    # logger.debug('Element: ' + '\t'.join(line.split()[:5]))
+                    chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
 
                 line = gff_file.readline()
                 if gff_file.tell() == eof:
