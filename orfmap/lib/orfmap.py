@@ -7,7 +7,7 @@ logger = logHandler.Logger(name=__name__)
 def mapping(gff_data, fasta_hash, param):
 
     all_orfs = []
-    for chr_id in sorted(fasta_hash):
+    for chr_id in sorted(gff_data):
         logger.info('Reading chromosome {} ...'.format(chr_id))
         gff_chr = gff_data[chr_id]
 

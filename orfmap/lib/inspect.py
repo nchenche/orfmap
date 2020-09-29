@@ -44,7 +44,7 @@ def check_chrids(chrs_gff=[], chrs_fasta=[]):
         else:
             table_chrs(chrs_gff, chrs_fasta)
             logger.info('All chromosomes are shared between GFF and fasta files.')
-        return chr_common
+        return sorted(chr_common)
     else:
         table_chrs(chrs_gff, chrs_fasta)
         logger.error('Chromosomes are not consistent between GFF and fasta files.')
