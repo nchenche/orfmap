@@ -30,6 +30,12 @@ def main():
     fasta_hash = fasta_parser.parse(fasta_filename=param.fasta_fname)
     gff_data = gff_parser.parse(gff_fname=param.gff_fname, fasta_hash=fasta_hash)
 
+    # if param.write_types:
+    #     gff_data.write_types(outpath=param.outpath)
+    #     sys.exit(0)
+    # elif param.show_types:
+    #     gff_data.show_types(outpath=param.outpath)
+
     # checking if type(s) given in argument is(are) valid
     inspect.check_types(gff_data=gff_data, types=param.types)
 

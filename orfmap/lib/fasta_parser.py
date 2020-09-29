@@ -228,7 +228,7 @@ def parse(fasta_filename):
             if line.startswith(b'>'):
                 chr_index = Fasta()
                 chr_index.fasta_fname = fasta_filename
-                chr_index.chr = line.decode().strip().split('>')[-1]
+                chr_index.chr = line.decode().strip().split('>')[-1].split()[0]
                 chr_index.curpos_start = fasta_file.tell()
 
                 seqline = fasta_file.readline()
