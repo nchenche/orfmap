@@ -52,7 +52,7 @@ class Fasta:
         off_char (int): difference between seq_len and line_len
 
         """
-        self.fasta_fname: str
+        self.fasta_fname = None
         self.chr = None
         self.curpos_start = None
         self.curpos_end = None

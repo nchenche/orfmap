@@ -36,7 +36,7 @@ The user can also specify what GFF element type(s) can be used as reference(s) t
 | nc_intergenic | if the ORF do not overlap with anything |
 
 **Note on default parameters**:
-* CDS in the only element type used as a reference to annotate ORF sequences.
+* CDS is the only element type used as a reference to annotate ORF sequences.
 * the minimum nucleotide number required to consider an ORF sequence is set at 60 nucleotides
 * an ORF sequence is considered as overlapping with an element (e.g. CDS) if at least 70 % of its sequence overlap with the element or if this element is totally included within the ORF sequence
 

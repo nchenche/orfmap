@@ -1,13 +1,12 @@
 import os
 from orfmap.lib import logHandler
 from orfmap.lib import gff_parser
-from orfmap.lib import seqio
 
 
 logger = logHandler.Logger(name=__name__)
 
 
-def mapping(gff_data, fasta_hash, param):
+def mapping(gff_data, param):
 
     if os.path.exists(param.outfile + '.gff'):
         os.remove(param.outfile + '.gff')
@@ -20,7 +19,6 @@ def mapping(gff_data, fasta_hash, param):
         out_gff.write(header)
         with open(param.outfile + '.fa', "a+") as out_fasta:
 
-            all_orfs = []
             for chr_id in sorted(gff_data):
                 logger.info('Reading chromosome {} ...'.format(chr_id))
                 gff_chr = gff_data[chr_id]
@@ -29,14 +27,9 @@ def mapping(gff_data, fasta_hash, param):
                 get_orfs(gff_chr=gff_chr, param=param, outfiles=[out_gff, out_fasta])
                 logger.info('')
 
-                # for orf in sorted(orfs, key=lambda x: (x.seqid, x.start)):
-                #     if is_orf_asked(orf=orf, param=param):
-                #         all_orfs.append(orf)
-
-    return all_orfs
 
 
-def get_orfs(gff_chr, param, outfiles=[]):
+def get_orfs(gff_chr, param, outfiles: list):
     out_gff = outfiles[0]
     out_fasta = outfiles[1]
     orf_len = param.orf_len
@@ -45,8 +38,9 @@ def get_orfs(gff_chr, param, outfiles=[]):
 
     # loops on each possible frame (the negative frame is defined in "frame_rev")
     for frame in range(3):
+        logger.debug('    - reading frame ' + str(frame))
         # list of codons in frame "frame"
-        codons = [sequence[i:i + 3].upper() for i in range(frame, len(sequence), 3) if len(sequence[i:i + 3]) == 3]
+        codons = (sequence[i:i + 3].upper() for i in range(frame, len(sequence), 3) if len(sequence[i:i + 3]) == 3)
 
         start_pos = frame + 1
 
@@ -175,14 +169,15 @@ def set_attributes(orf, orf_len):
 
     return suborfs
 
-def get_suborfs(orf, orf_len):
+
+def get_suborfs(orf: gff_parser.GffElement, orf_len):
     """
 
     Checks if the sequence extremities of an ORF overlapping with a CDS are long enough to be considered as nc_ORF.
     Adds them to the orfs list if the criteria is met.
 
     Args:
-        orfs (list): list of GffElement instances
+        orf (list): list of GffElement instances
         orf_len (int): cutoff length of the sequence to be an ORF
 
     Returns:
@@ -190,8 +185,6 @@ def get_suborfs(orf, orf_len):
 
     """
     gff_line = orf.get_gffline()
-    suborf_5ter = None
-    suborf_3ter = None
     suborfs = []
 
     for element in orf.ovp_phased:
@@ -228,6 +221,7 @@ def get_suborfs(orf, orf_len):
             suborfs.append(suborf_3ter)
 
     return suborfs
+
 
 def is_5ter_ok(orf, element, orf_len=60):
     if orf.strand == '+':

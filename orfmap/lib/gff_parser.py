@@ -15,7 +15,7 @@ logger = logHandler.Logger(name=__name__)
 class GffElement:
 
     def __init__(self, gff_line=None, fasta_chr=None):
-        self.gff_line = gff_line.split() if gff_line else None
+        self.gff_line = gff_line.split('\t') if gff_line else None
         self.fasta_chr = fasta_chr if fasta_chr else None
         self.len_chr = fasta_chr.nucid_max if fasta_chr else None
 
@@ -38,18 +38,15 @@ class GffElement:
         else:
             self.phase = '.'
             self.frame = None
-            self.init_attributes()
+            self._id = None
+            self.name = None
+            self.parent = None
+            self.status = None
+            self.color = None
 
         self.ovp_phased = []
         self.ovp_unphased = []
         self.suborfs = []
-
-    def init_attributes(self):
-        self._id = None
-        self.name = None
-        self.parent = None
-        self.status = None
-        self.color = None
 
     def _get_attributes(self):
         attributes = self.gff_line[8:][0]
@@ -408,7 +405,7 @@ def set_gff_descr(gff_fname):
         line = gff_file.readline()
         while line:
             if not line.startswith('#'):
-                name = line.split()[0]
+                name = line.split('\t')[0]
                 pos_chr = gff_file.tell()-len(line)
                 if name not in GFF_DESCR:
                     GFF_DESCR[name] = pos_chr
@@ -442,15 +439,15 @@ def parse(param=None, fasta_hash=None, chr_id=None):
         for chr_id in chr_ids:
             gff_file.seek(GFF_DESCR[chr_id], 0)
             line = gff_file.readline()
-            chr_name = line.split()[0]
+            chr_name = line.split('\t')[0]
             while chr_name == chr_id:
                 if chr_name not in gff_data:
                     logger.debug('  - Reading chromosome: ' + chr_name)
                     gff_data[chr_name] = Chromosome(_id=chr_name, fasta_chr=fasta_hash[chr_id])
                     chromosome = gff_data[chr_name]
-                    chromosome.source = line.split()[1]
+                    chromosome.source = line.split('\t')[1]
 
-                element_type = line.split()[2]
+                element_type = line.split('\t')[2]
                 if element_type in types:
                     # logger.debug('Element: ' + '\t'.join(line.split()[:5]))
                     chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
@@ -459,6 +456,6 @@ def parse(param=None, fasta_hash=None, chr_id=None):
                 if gff_file.tell() == eof:
                     break
                 else:
-                    chr_name = line.split()[0]
+                    chr_name = line.split('\t')[0]
 
     return gff_data

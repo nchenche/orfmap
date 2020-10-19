@@ -5,21 +5,27 @@ Created on Sun Jul 12 16:52:13 2020
 @author: nicolas
 """
 
-import os
 import sys
-
 from orfmap.lib import orfmap
 from orfmap.lib import logHandler
 from orfmap.lib import fasta_parser
 from orfmap.lib import gff_parser
 from orfmap.lib import parameters
-from orfmap.lib import seqio
 from orfmap.lib import inspect
+from orfmap.lib import tools
 
 
 def main():
     # gets arguments
     param = parameters.Param(args=parameters.get_args())
+
+    if param.bool_chrs:
+        tools.get_infos(_input=param.gff_fname, option='chrs')
+        sys.exit(0)
+    elif param.bool_types:
+        tools.get_infos(_input=param.gff_fname, option='types')
+        sys.exit(0)
+
     logger = logHandler.Logger(name='main', outpath=param.outpath)
     logo(logger)
     param.description()
@@ -27,24 +33,14 @@ def main():
     # parses fasta & gff by chromosomes
     logger.title('# Parsing GFF and fasta input files #')
     fasta_hash = fasta_parser.parse(fasta_filename=param.fasta_fname)
-    gff_data = gff_parser.parse(param=param, fasta_hash=fasta_hash)
-
-    # if param.write_types:
-    #     gff_data.write_types(outpath=param.outpath)
-    #     sys.exit(0)
-    # elif param.show_types:
-    #     gff_data.show_types(outpath=param.outpath)
+    gff_data = gff_parser.parse(param=param, fasta_hash=fasta_hash, chr_id=param.chr)
 
     # checking if type(s) given in argument is(are) valid
     inspect.check_types(gff_data=gff_data, types=param.types)
 
     # ORFs mapping (scans genome for stop-to-stop sequences and assigns them a status)
     logger.title('# Mapping ORFs (stop-to-stop codons) #')
-    all_orfs = orfmap.mapping(gff_data=gff_data, fasta_hash=fasta_hash, param=param)
-
-    # writes outputs
-    # logger.title('# Writing GFF and fasta output files #')
-    # seqio.write_orfs(all_orfs=all_orfs, param=param)
+    orfmap.mapping(gff_data=gff_data, param=param)
 
 
 def logo(logger):
@@ -58,4 +54,3 @@ def logo(logger):
 
 if __name__ == '__main__':
     sys.exit(main())
-
