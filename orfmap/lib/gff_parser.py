@@ -238,30 +238,30 @@ class Chromosome:
         if types:
             if coors:
                 if strand:
-                    elements = [x for x in self.get_elements_in_intervals(coors) if x.type in types and x.strand == strand]
+                    elements = (x for x in self.get_elements_in_intervals(coors) if x.type in types and x.strand == strand)
                 else:
-                    elements = [x for x in self.get_elements_in_intervals(coors) if x.type in types]
+                    elements = (x for x in self.get_elements_in_intervals(coors) if x.type in types)
             else:
                 if strand:
-                    elements = [x for x in self.gff_elements if x.type in types and x.strand == strand]
+                    elements = (x for x in self.gff_elements if x.type in types and x.strand == strand)
                 else:
-                    elements = [x for x in self.gff_elements if x.type in types]
+                    elements = (x for x in self.gff_elements if x.type in types)
         else:
             if coors:
                 if strand:
-                    elements = [x for x in self.get_elements_in_intervals(coors) if x.strand == strand]
+                    elements = (x for x in self.get_elements_in_intervals(coors) if x.strand == strand)
                 else:
-                    elements = [x for x in self.get_elements_in_intervals(coors)]
+                    elements = (x for x in self.get_elements_in_intervals(coors))
             else:
                 if strand:
-                    elements = [x for x in self.gff_elements if x.strand == strand]
+                    elements = (x for x in self.gff_elements if x.strand == strand)
                 else:
-                    elements = [x for x in self.gff_elements]
+                    elements = (x for x in self.gff_elements)
 
         if not frame:
             return elements
         else:
-            return [x for x in elements if x.frame == frame]
+            return (x for x in elements if x.frame == frame)
         
     def get_types(self):
         return set([x.type for x in self.gff_elements])
