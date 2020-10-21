@@ -29,7 +29,7 @@ def mapping(gff_data, param):
 
 
 def get_orfs(gff_chr, param, outfiles: list):
-    max_subsequence_length = 999999
+    max_subsequence_length = 1999998
     out_gff = outfiles[0]
     out_fasta = outfiles[1]
     orf_len = param.orf_len
