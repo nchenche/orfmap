@@ -28,64 +28,45 @@ def mapping(gff_data, param):
                 logger.info('')
 
 
-
 def get_orfs(gff_chr, param, outfiles: list):
+    max_subsequence_length = 1999998
     out_gff = outfiles[0]
     out_fasta = outfiles[1]
     orf_len = param.orf_len
-    sequence = gff_chr.sequence()
     pos = 0
 
     # loops on each possible frame (the negative frame is defined in "frame_rev")
     for frame in range(3):
-        logger.debug('    - reading frame ' + str(frame))
-        # list of codons in frame "frame"
-        codons = (sequence[i:i + 3].upper() for i in range(frame, len(sequence), 3) if len(sequence[i:i + 3]) == 3)
-
-        start_pos = frame + 1
+        subsequences = (gff_chr.sequence(start=i, end=i+max_subsequence_length) for i in
+                        range(1+frame, gff_chr.end, max_subsequence_length))
 
         frame_rev = (gff_chr.end % 3 - frame) % 3
+        start_pos = None
         start_pos_rev = None
         end_pos_rev = None
 
-        for pos, codon in enumerate(codons):
-            if codon in ['TAG', 'TGA', 'TAA']:
-                end_pos = pos * 3 + 1 + 2 + frame
-                if end_pos - start_pos + 1 >= orf_len:
-                    orf = gff_parser.GffElement(fasta_chr=gff_chr.fasta_chr)
-                    orf.seqid = gff_chr._id
-                    orf.source = gff_chr.source
-                    orf.strand = '+'
-                    orf.frame = frame
-                    if start_pos == frame + 1:
-                        orf.start = start_pos
-                    else:
-                        orf.start = start_pos + 3
-                    orf.end = end_pos
+        for n, sequence in enumerate(subsequences):
 
-                    suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
-                    out_gff.write(orf.get_gffline())
-                    out_fasta.write(orf.get_fastaline())
-                    if suborfs:
-                        for suborf in suborfs:
-                            out_gff.write(suborf.get_gffline())
-                            out_fasta.write(suborf.get_fastaline())
+            logger.debug('    - reading frame {} of subsequence {}'.format(str(frame), str(n)))
+            # list of codons in frame "frame"
+            codons = (sequence[i:i + 3].upper() for i in range(0, len(sequence), 3) if len(sequence[i:i + 3]) == 3)
 
-                start_pos = end_pos - 2
+            start_pos = start_pos if start_pos else frame + 1
 
-            elif codon in ['CTA', 'TCA', 'TTA']:
-                if start_pos_rev is None:
-                    start_pos_rev = pos * 3 + 1 + frame
-                else:
-                    end_pos_rev = pos * 3 + 1 + 2 + frame
-                    if end_pos_rev - start_pos_rev + 1 >= orf_len:
+            for pos, codon in enumerate(codons, start=int(n*max_subsequence_length/3)):
+                if codon in ['TAG', 'TGA', 'TAA']:
+                    end_pos = pos * 3 + 1 + 2 + frame
+                    if end_pos - start_pos + 1 >= orf_len:
                         orf = gff_parser.GffElement(fasta_chr=gff_chr.fasta_chr)
                         orf.seqid = gff_chr._id
                         orf.source = gff_chr.source
-                        orf.strand = '-'
-                        orf.frame = frame_rev
-                        orf.start = start_pos_rev
-                        orf.end = end_pos_rev - 3
+                        orf.strand = '+'
+                        orf.frame = frame
+                        if start_pos == frame + 1:
+                            orf.start = start_pos
+                        else:
+                            orf.start = start_pos + 3
+                        orf.end = end_pos
 
                         suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
                         out_gff.write(orf.get_gffline())
@@ -95,7 +76,31 @@ def get_orfs(gff_chr, param, outfiles: list):
                                 out_gff.write(suborf.get_gffline())
                                 out_fasta.write(suborf.get_fastaline())
 
-                    start_pos_rev = end_pos_rev - 2
+                    start_pos = end_pos - 2
+
+                elif codon in ['CTA', 'TCA', 'TTA']:
+                    if start_pos_rev is None:
+                        start_pos_rev = pos * 3 + 1 + frame
+                    else:
+                        end_pos_rev = pos * 3 + 1 + 2 + frame
+                        if end_pos_rev - start_pos_rev + 1 >= orf_len:
+                            orf = gff_parser.GffElement(fasta_chr=gff_chr.fasta_chr)
+                            orf.seqid = gff_chr._id
+                            orf.source = gff_chr.source
+                            orf.strand = '-'
+                            orf.frame = frame_rev
+                            orf.start = start_pos_rev
+                            orf.end = end_pos_rev - 3
+
+                            suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
+                            out_gff.write(orf.get_gffline())
+                            out_fasta.write(orf.get_fastaline())
+                            if suborfs:
+                                for suborf in suborfs:
+                                    out_gff.write(suborf.get_gffline())
+                                    out_fasta.write(suborf.get_fastaline())
+
+                        start_pos_rev = end_pos_rev - 2
 
         # adds coordinates of ORF in extremities
         if end_pos_rev:

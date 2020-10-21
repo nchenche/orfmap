@@ -196,7 +196,7 @@ class Chromosome:
         """
         Returns a list of coordinates that overlap with the element coordinates.
         """
-        return [x for x in self.coors_intervals if get_overlap(x, coors)[1]]
+        return (x for x in self.coors_intervals if get_overlap(x, coors)[1])
         
     def _add_to_intervals(self):
         last_element = self.gff_elements[-1]
@@ -218,7 +218,7 @@ class Chromosome:
         intervals_mx = [self.coors_intervals[x] for x in self._get_intervals(coors=coors)]
         intervals_flat = set([val for sublist in intervals_mx for val in sublist])
 
-        return [self.gff_elements[x] for x in intervals_flat]
+        return (self.gff_elements[x] for x in intervals_flat)
         
     def get_elements(self, coors=None, frame=None, strand=None, types=None):
         """
@@ -238,36 +238,38 @@ class Chromosome:
         if types:
             if coors:
                 if strand:
-                    elements = [x for x in self.get_elements_in_intervals(coors) if x.type in types and x.strand == strand]
+                    elements = (x for x in self.get_elements_in_intervals(coors) if x.type in types and x.strand == strand)
                 else:
-                    elements = [x for x in self.get_elements_in_intervals(coors) if x.type in types]
+                    elements = (x for x in self.get_elements_in_intervals(coors) if x.type in types)
             else:
                 if strand:
-                    elements = [x for x in self.gff_elements if x.type in types and x.strand == strand]
+                    elements = (x for x in self.gff_elements if x.type in types and x.strand == strand)
                 else:
-                    elements = [x for x in self.gff_elements if x.type in types]
+                    elements = (x for x in self.gff_elements if x.type in types)
         else:
             if coors:
                 if strand:
-                    elements = [x for x in self.get_elements_in_intervals(coors) if x.strand == strand]
+                    elements = (x for x in self.get_elements_in_intervals(coors) if x.strand == strand)
                 else:
-                    elements = [x for x in self.get_elements_in_intervals(coors)]
+                    elements = (x for x in self.get_elements_in_intervals(coors))
             else:
                 if strand:
-                    elements = [x for x in self.gff_elements if x.strand == strand]
+                    elements = (x for x in self.gff_elements if x.strand == strand)
                 else:
-                    elements = [x for x in self.gff_elements]
+                    elements = (x for x in self.gff_elements)
 
         if not frame:
             return elements
         else:
-            return [x for x in elements if x.frame == frame]
+            return (x for x in elements if x.frame == frame)
         
     def get_types(self):
         return set([x.type for x in self.gff_elements])
         
-    def sequence(self):
-        return self.fasta_chr.sequence(start=self.start, end=self.end, strand='+', phase=0)
+    def sequence(self, start: int, end: int):
+        start = start if start else self.start
+        end = end if end else self.end
+        return self.fasta_chr.sequence(start=start, end=end, strand='+', phase=0)
                                       
     def rev_comp(self):
         return self.fasta_chr.reverse_complement(self.sequence())
