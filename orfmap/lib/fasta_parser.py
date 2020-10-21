@@ -4,6 +4,7 @@ Created on Sun Jul 12 16:59:14 2020
 
 @author: nicolas
 """
+import random
 from orfmap.lib import logHandler
 
 logger = logHandler.Logger(name=__name__)
@@ -35,7 +36,21 @@ class Fasta:
 
     """
 
-    base_complement = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G', 'N': 'N', 'R': 'Y', 'Y': 'R'}
+    base_complement = {'A': 'T',
+                       'T': 'A',
+                       'G': 'C',
+                       'C': 'G',
+                       'N': 'N',
+                       'R': 'Y',
+                       'Y': 'R',
+                       'W': 'N',
+                       'S': 'N',
+                       'M': 'N',
+                       'K': 'N',
+                       'B': 'N',
+                       'D': 'N',
+                       'H': 'N',
+                       'V': 'N'}
 
     def __init__(self):
         """
@@ -196,7 +211,7 @@ class Fasta:
         sequence = self.sequence(start=start, end=end, phase=phase, strand=strand)
 
         protein = ''
-        codons = [sequence[i:i + 3] for i in range(0, len(sequence), 3)]
+        codons = (sequence[i:i + 3] for i in range(0, len(sequence), 3))
 
         for codon in codons:
             if codon.upper() not in Genecode.keys():
@@ -205,7 +220,6 @@ class Fasta:
                 protein += Genecode[codon.upper()]
 
         return protein
-        # return ''.join([Genecode[x.upper()] for x in codons if len(x) == 3])
 
     def index_resume(self):
         """
