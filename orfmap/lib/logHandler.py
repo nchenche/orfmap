@@ -65,13 +65,13 @@ def get_config(outpath='./'):
         "console": {
           "class": "logging.StreamHandler",
           "level": "DEBUG",
-          "formatter": "detailed"
+          "formatter": "simple"
         },
 
         "info_handler": {
           "class": "logging.FileHandler",
           "level": "INFO",
-          "formatter": "detailed",
+          "formatter": "simple",
           "filename": outpath+"info.log",
           "mode": "w+",
           "encoding": "utf8",

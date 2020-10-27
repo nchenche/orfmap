@@ -125,7 +125,7 @@ def get_orfs(gff_chr, param, outfiles: list):
 
 
 def assignment(orf, gff_chr, param):
-    elements = gff_chr.get_elements(coors=orf.get_coors(), types=param.types)
+    elements = gff_chr.get_elements(coors=orf.get_coors())
     check_ovp(orf=orf, elements=elements, co_ovp=param.co_ovp)
     suborfs = set_attributes(orf=orf, orf_len=param.orf_len)
 

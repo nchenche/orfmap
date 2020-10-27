@@ -419,7 +419,6 @@ def parse(param=None, fasta_hash=None, chr_id=None):
     logger.title('# Parsing GFF file')
 
     gff_fname = param.gff_fname
-    types = param.types
     fasta_hash = fasta_hash
     chr_id = chr_id
 
@@ -450,9 +449,17 @@ def parse(param=None, fasta_hash=None, chr_id=None):
                     chromosome.source = line.split('\t')[1]
 
                 element_type = line.split('\t')[2]
-                if element_type in types:
-                    # logger.debug('Element: ' + '\t'.join(line.split()[:5]))
-                    chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
+                if element_type not in ['chromosome', 'region']:
+
+                    if not param.types_except and not param.types_only:
+                        chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
+                    else:
+                        if param.types_except:
+                            if element_type not in param.types_except:
+                                chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
+                        elif param.types_only:
+                            if element_type in param.types_only:
+                                chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
 
                 line = gff_file.readline()
                 if gff_file.tell() == eof:

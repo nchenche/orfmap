@@ -20,9 +20,16 @@ class Param:
         self.fasta_fname = args.fna
         self.gff_fname = args.gff
         self.chr = args.chr
-        if 'CDS' not in args.type:
-            args.type.append('CDS')
-        self.types = list(set(args.type))
+
+        self.types_only = []
+        self.types_except = []
+        if args.types_only:
+            self.types_only = list(set(['CDS'] + args.types_only))
+            self.types_except = []
+        elif args.types_except:
+            self.types_except = list(set(args.types_except))
+            self.types_only = []
+
         self.include = args.o_include
         self.exclude = args.o_exclude
         self.orf_len = args.orf_len
@@ -51,7 +58,8 @@ class Param:
         logger.info('- fasta filename: ' + self.fasta_fname)
         logger.info('- gff filename: ' + self.gff_fname)
         logger.info('- chr: ' + chr)
-        logger.info('- types: ' + ', '.join(self.types))
+        logger.info('- types_only: ' + ', '.join(self.types_only))
+        logger.info('- types_except: ' + ', '.join(self.types_except))
         logger.info('- o_include: ' + ', '.join(self.include))
         logger.info('- o_exclude: ' + ', '.join(self.exclude))
         logger.info('- orf_len: ' + str(self.orf_len))
@@ -75,8 +83,10 @@ def get_args():
                         help="GFF annotation file (.gff)")
     parser.add_argument("-chr", required=False, nargs="?", type=str, default=None,
                         help="Chromosome name")
-    parser.add_argument("-type", required=False, nargs="+", default=['CDS'],
-                        help="Type feature(s) a flag is desired for ('CDS' in included by default).")
+    parser.add_argument("-types_only", required=False, nargs="+", default=[],
+                        help="Type feature(s) to use as reference(s) ('CDS' in included by default).")
+    parser.add_argument("-types_except", required=False, nargs="+", default=[],
+                        help="Type feature(s) to not consider as reference(s) ('gene', 'telomere', and 'centromere' by default).")
     parser.add_argument("-o_include", required=False, nargs="+", default=['all'],
                         help="Type feature(s) and/or Status attribute(s) desired to be written in the output (all by default).")
     parser.add_argument("-o_exclude", required=False, nargs="+", default=[],

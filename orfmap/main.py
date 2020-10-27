@@ -36,7 +36,7 @@ def main():
     gff_data = gff_parser.parse(param=param, fasta_hash=fasta_hash, chr_id=param.chr)
 
     # checking if type(s) given in argument is(are) valid
-    inspect.check_types(gff_data=gff_data, types=param.types)
+    # inspect.check_types(gff_data=gff_data, types=param.types)
 
     # ORFs mapping (scans genome for stop-to-stop sequences and assigns them a status)
     logger.title('# Mapping ORFs (stop-to-stop codons) #')

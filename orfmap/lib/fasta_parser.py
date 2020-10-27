@@ -272,4 +272,7 @@ def parse(fasta_filename):
         chr_indexes[-1].curpos_end = fasta_file.tell() - chr_indexes[-1].off_char - 1
         chr_indexes[-1].init_nucid_max()
 
+    # for chr_index in chr_indexes:
+    #     print(chr_index.index_resume())
+
     return {x.chr: x for x in chr_indexes}
