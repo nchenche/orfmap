@@ -4,7 +4,7 @@ ORFMap - A tool aimed at scanning a genome for stop-codons delimited sequences (
 
 ## Summary
 * <p><a href="#descr">Description</a></p>
-* <p><a href="#install">Installation</a></p>
+* <p><a href="#installation">Installation</a></p>
 * <p><a href="#usage_descr">Usage description</a></p>
 * <p><a href="#usage_ex">Some usage examples</a></p>
 
@@ -49,7 +49,7 @@ The user can also specify what GFF element type(s) can be used as reference(s) t
 * an ORF sequence is considered as overlapping with an element (e.g. CDS) if at least 70 % of its sequence overlap with the element or if this element is totally included within the ORF sequence
 
 
-<h2><a name="install">Installation</a></h2>
+<h2><a name="installation">Installation</a></h2>
 
 ### 1. Download and uncompress the latest release archive
 
