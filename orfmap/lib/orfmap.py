@@ -70,12 +70,6 @@ def get_orfs(gff_chr, param, outfiles: list):
 
                         suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
                         write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
-                        out_gff.write(orf.get_gffline())
-                        out_fasta.write(orf.get_fastaline())
-                        if suborfs:
-                            for suborf in suborfs:
-                                out_gff.write(suborf.get_gffline())
-                                out_fasta.write(suborf.get_fastaline())
 
                     start_pos = end_pos - 2
 
@@ -94,12 +88,7 @@ def get_orfs(gff_chr, param, outfiles: list):
                             orf.end = end_pos_rev - 3
 
                             suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
-                            out_gff.write(orf.get_gffline())
-                            out_fasta.write(orf.get_fastaline())
-                            if suborfs:
-                                for suborf in suborfs:
-                                    out_gff.write(suborf.get_gffline())
-                                    out_fasta.write(suborf.get_fastaline())
+                            write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
 
                         start_pos_rev = end_pos_rev - 2
 
@@ -117,21 +106,18 @@ def get_orfs(gff_chr, param, outfiles: list):
                 orf.end = end_pos_rev
 
                 suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
-                out_gff.write(orf.get_gffline())
-                out_fasta.write(orf.get_fastaline())
-                if suborfs:
-                    for suborf in suborfs:
-                        out_gff.write(suborf.get_gffline())
-                        out_fasta.write(suborf.get_fastaline())
+                write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
 
 
 def write_outputs(out_fasta, out_gff, orf, suborfs, param):
-    out_gff.write(orf.get_gffline())
-    out_fasta.write(orf.get_fastaline())
+    if is_orf_asked(orf=orf, param=param):
+        out_gff.write(orf.get_gffline())
+        out_fasta.write(orf.get_fastaline())
     if suborfs:
         for suborf in suborfs:
-            out_gff.write(suborf.get_gffline())
-            out_fasta.write(suborf.get_fastaline())
+            if is_orf_asked(orf=suborf, param=param):
+                out_gff.write(suborf.get_gffline())
+                out_fasta.write(suborf.get_fastaline())
 
 
 def assignment(orf, gff_chr, param):
@@ -253,17 +239,17 @@ def is_3ter_ok(orf, element, orf_len=60):
 
 
 def is_orf_asked(orf=None, param=None):
-    if 'all' in param.include:
-        if not param.exclude:
+    if 'all' in param.o_include:
+        if not param.o_exclude:
             return True
         else:
-            if not is_orf_exclude(orf=orf, exclude=param.exclude):
+            if not is_orf_exclude(orf=orf, exclude=param.o_exclude):
                 return True
             else:
                 return False
     else:
-        if is_orf_include(orf=orf, include=param.include):
-            if not is_orf_exclude(orf=orf, exclude=param.exclude):
+        if is_orf_include(orf=orf, include=param.o_include):
+            if not is_orf_exclude(orf=orf, exclude=param.o_exclude):
                 return True
             else:
                 return False

@@ -52,11 +52,12 @@ class Param:
             object: str
 
         """
+        chrid = 'None' if not self.chr else self.chr
         logger.info('')
         logger.info('Parameters description:')
         logger.info('- fasta filename: ' + self.fasta_fname)
         logger.info('- gff filename: ' + self.gff_fname)
-        logger.info('- chr: ' + self.chr)
+        logger.info('- chr: ' + chrid)
         logger.info('- types_only: ' + ', '.join(self.types_only))
         logger.info('- types_except: ' + ', '.join(self.types_except))
         logger.info('- o_include: ' + ', '.join(self.o_include))
