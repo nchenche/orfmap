@@ -1,13 +1,16 @@
 # ORFMap
 ORFMap - A tool aimed at scanning a genome for stop-codons delimited sequences (ORFs) and annotating them.
-
-
+ 
+<a href="#target">Description</a>
 ## Description
 
 From a genomic fasta file and its associated GFF, the program first scans the genome to retrieve all sequences
 delimited by stop codons. Only sequences of at least 60 nucleotides long are kept by default.
 
-Those so-called ORF sequences are then annotated depending upon GFF element type(s) used as a reference. The CDS element type is always used as a reference but others can be added. By default an ORF sequence has 5 possible annotations:
+Those so-called ORF sequences are then annotated depending upon GFF element type(s) used as a reference.
+The CDS element type is always used as a reference but others can be added.
+
+By default an ORF sequence has 5 possible annotations:
 
 | ORF annotation | Condition |
 | --- | --- |
@@ -52,6 +55,7 @@ If you downloaded:
 * the *.zip* file: ```unzip ORFMap-x.x.x.zip```
 * the *.tar.gz* file: ```gunzip ORFMap-x.x.x.tar.gz | tar xvf```
 
+<h3><a name="target"> 2. Create an isolated environment</a></h3>
 
 ### 2. Create an isolated environment
 Although not strictly necessary, this step is highly recommended (it will allow you to work on different projects without having
@@ -176,68 +180,53 @@ optional arguments:
 
 Except -fna and -gff arguments that are mandatory, all others are optional.
 
-| Arguments | Default value |
-| --- | --- |
-| -type | CDS |
-| -o_include | 'all' |
-| -o_exclude | None |
-| -orf_len | 60 |
-| -co_ovp | 0.7 |
-| -out | './' |
-
 
 Usage examples
 -----------------
 
-This command will use tRNA and snRNA element types as a reference to annotate ORF sequences and the outputs will be created in myResults/
+##### Use tRNA and snRNA element as a reference to annotate ORF sequences:
 ```
-run_orfmap -fna mygenome.fna -gff mygenome.gff -type tRNA snRNA -out myResults
-```
-
-7 annotations will be possible for an ORF sequence:
-
-| ORF annotation | Condition |
-| --- | --- |
-| c_CDS |if the ORF overlap with a CDS in the same phase |
-| nc_5-CDS | if the 5' extremity of the c_CDS is at least 60 nucleotides long |
-| nc_3-CDS | if the 3' extremity of the c_CDS is at least 60 nucleotides long |
-| nc_ovp-CDS | if the ORF overlap with a CDS in a different phase |
-| nc_ovp-tRNA | if the ORF overlap with a tRNA |
-| nc_ovp-snRNA | if the ORF overlap with a snRNA |
-| nc_intergenic | if the ORF do not overlap with anything |
-
- 
-To make the output files having only ORF sequences mapped as nc_ovp-tRNA and nc_ovp-snRNA:
-```
-run_orfmap -fna mygenome.fna -gff mygenome.gff -type tRNA snRNA -o_include nc_ovp-tRNA nc_ovp-snRNA -out myResults
+run_orfmap -fna mygenome.fna -gff mygenome.gff -types_only tRNA snRNA -out myResults
 ```
 
-To make the output files having all ORF sequences except those mapped as c_CDS:
+
+
+##### Use tRNA and snRNA element as a reference to annotate ORF sequences:
+```
+run_orfmap -fna mygenome.fna -gff mygenome.gff -types_only tRNA snRNA -out myResults
+```
+
+##### Write in output files only ORF sequences mapped as nc_ovp-tRNA and nc_ovp-snRNA:
+```
+run_orfmap -fna mygenome.fna -gff mygenome.gff -types_only tRNA snRNA -o_include nc_ovp-tRNA nc_ovp-snRNA -out myResults
+```
+
+##### Write in output files all ORF sequences except those mapped as c_CDS:
 ```
 run_orfmap -fna mygenome.fna -gff mygenome.gff -type tRNA snRNA -o_exclude c_CDS -out myResults
 ```
 
-or:
+##### or:
 ```
 run_orfmap -fna mygenome.fna -gff mygenome.gff -type tRNA snRNA -o_exclude coding -out myResults
 ```
 
-**Note**: -o_include and -o_exclude take either feature types or a status attribute as arguments. Feature types have to be amongst the possible annotations for ORF sequences (e.g. c_CDS, nc_5-CDS, nc_intergenic...) while status attribute is either 'coding' or 'non-coding' ('coding' refers to c_CDS and 'non-coding' refers to the other ones).
+<em>Note</em>:
+<p>
+-o_include and -o_exclude take either feature types or a status attribute as arguments.
+Feature types have to be amongst the possible annotations for ORF sequences (e.g. c_CDS, nc_5-CDS, nc_intergenic...)
+ while status attribute is either 'coding' or 'non-coding' ('coding' refers to c_CDS and 'non-coding' refers to the other ones).
+ </p>
 
 
-
-This command will define ORF sequences if they are at least 50 nucleotides
+##### Assign ORF seqences if stop-to-stop length is at least 50 nucleotides:
 ```
 run_orfmap -fna mygenome.fna -gff mygenome.gff -orf_len 50
 ```
 
-
-This command will consider an ORF sequence as overlapping with an element (e.g. CDS) if at least 60 % of its sequence overlap with the element or if this element is totally included within the ORF sequence
+##### Consider an ORF sequence as overlapping with any element if at least 60 % of its sequence overlap with the element:
 ```
 run_orfmap -fna mygenome.fna -gff mygenome.gff -co_ovp 0.6
 ```
-
-
-
 
 
