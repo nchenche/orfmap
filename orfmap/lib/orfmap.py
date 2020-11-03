@@ -69,6 +69,7 @@ def get_orfs(gff_chr, param, outfiles: list):
                         orf.end = end_pos
 
                         suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
+                        write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
                         out_gff.write(orf.get_gffline())
                         out_fasta.write(orf.get_fastaline())
                         if suborfs:
@@ -122,6 +123,15 @@ def get_orfs(gff_chr, param, outfiles: list):
                     for suborf in suborfs:
                         out_gff.write(suborf.get_gffline())
                         out_fasta.write(suborf.get_fastaline())
+
+
+def write_outputs(out_fasta, out_gff, orf, suborfs, param):
+    out_gff.write(orf.get_gffline())
+    out_fasta.write(orf.get_fastaline())
+    if suborfs:
+        for suborf in suborfs:
+            out_gff.write(suborf.get_gffline())
+            out_fasta.write(suborf.get_fastaline())
 
 
 def assignment(orf, gff_chr, param):

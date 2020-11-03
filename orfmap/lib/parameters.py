@@ -30,8 +30,8 @@ class Param:
             self.types_except = list(set(args.types_except))
             self.types_only = []
 
-        self.include = args.o_include
-        self.exclude = args.o_exclude
+        self.o_include = args.o_include
+        self.o_exclude = args.o_exclude
         self.orf_len = args.orf_len
         self.co_ovp = args.co_ovp
         self.bool_types = args.bool_types
@@ -52,16 +52,15 @@ class Param:
             object: str
 
         """
-        chr = self.chr if self.chr else 'None'
         logger.info('')
         logger.info('Parameters description:')
         logger.info('- fasta filename: ' + self.fasta_fname)
         logger.info('- gff filename: ' + self.gff_fname)
-        logger.info('- chr: ' + chr)
+        logger.info('- chr: ' + self.chr)
         logger.info('- types_only: ' + ', '.join(self.types_only))
         logger.info('- types_except: ' + ', '.join(self.types_except))
-        logger.info('- o_include: ' + ', '.join(self.include))
-        logger.info('- o_exclude: ' + ', '.join(self.exclude))
+        logger.info('- o_include: ' + ', '.join(self.o_include))
+        logger.info('- o_exclude: ' + ', '.join(self.o_exclude))
         logger.info('- orf_len: ' + str(self.orf_len))
         logger.info('- co_ovp : ' + str(self.co_ovp))
         logger.info('- outfile: ' + self.outfile)
@@ -86,7 +85,7 @@ def get_args():
     parser.add_argument("-types_only", required=False, nargs="+", default=[],
                         help="Type feature(s) to use as reference(s) ('CDS' in included by default).")
     parser.add_argument("-types_except", required=False, nargs="+", default=[],
-                        help="Type feature(s) to not consider as reference(s) ('gene', 'telomere', and 'centromere' by default).")
+                        help="Type feature(s) to not consider as reference(s) (None by default).")
     parser.add_argument("-o_include", required=False, nargs="+", default=['all'],
                         help="Type feature(s) and/or Status attribute(s) desired to be written in the output (all by default).")
     parser.add_argument("-o_exclude", required=False, nargs="+", default=[],
@@ -106,7 +105,6 @@ def get_args():
     parser.add_argument('--show-chrs', action='store_true', default=False,
                         dest='bool_chrs',
                         help='Print all chromosome names')
-
 
     args = parser.parse_args()
     

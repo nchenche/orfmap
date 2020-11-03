@@ -29,7 +29,6 @@ def main():
     logger = logHandler.Logger(name='main', outpath=param.outpath)
     logo(logger)
     param.description()
-    sys.exit(0)
 
     # parses fasta & gff by chromosomes
     logger.title('# Parsing GFF and fasta input files #')

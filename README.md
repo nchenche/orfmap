@@ -1,12 +1,8 @@
-ORFMap
-===========
-
+# ORFMap
 ORFMap - A tool aimed at scanning a genome for stop-codons delimited sequences (ORFs) and annotating them.
 
 
-
-Description
------------
+## Description
 
 From a genomic fasta file and its associated GFF, the program first scans the genome to retrieve all sequences
 delimited by stop codons. Only sequences of at least 60 nucleotides long are kept by default.
@@ -21,9 +17,11 @@ Those so-called ORF sequences are then annotated depending upon GFF element type
 | nc_ovp-CDS | if the ORF overlap with a CDS in a different phase |
 | nc_intergenic | if the ORF do not overlap with anything |
  
-**Note** that if an ORF sequence is tagged as 'c_CDS', this sequence is further processed to be cut at its 5' and 3' extremities that do not overlap with the CDS. If their length is above or equal to 60 nucleotides, then those subsequences can be assigned as nc_5-CDS and/or nc_3-CDS.
+**Note:** 
+If an ORF sequence is tagged as 'c_CDS', this sequence is further processed to be cut at its 5' and 3' extremities that do not overlap with the CDS. If their length is above or equal to 60 nucleotides, then those subsequences can be assigned as nc_5-CDS and/or nc_3-CDS.
+ <br></br>
+ <br></br>
  
-
 The user can also specify what GFF element type(s) can be used as reference(s) to annotate ORF sequences in addition to the CDS type. For instance, if the user adds the tRNA element type, ORF sequences could now be assigned as nc_ovp-tRNA if they overlap with a tRNA. Thus 6 assignments would now be possible for an ORF sequence:
 
 | ORF annotation | Condition |
@@ -41,88 +39,79 @@ The user can also specify what GFF element type(s) can be used as reference(s) t
 * an ORF sequence is considered as overlapping with an element (e.g. CDS) if at least 70 % of its sequence overlap with the element or if this element is totally included within the ORF sequence
 
 
-----------------------------------------
-Installation procedure from distribution
-----------------------------------------
+## Installation procedure from distribution
+
+### 1. Download and uncompress the latest release archive
+
+#### Download the latest release
+Latest release: 
+[ ![](./docs/images/download-flat/16x16.png "Click to download the latest release")](https://github.com/nchenche/cusProSe/releases/latest/)
+
+#### Uncompress the archive
+If you downloaded:
+* the *.zip* file: ```unzip ORFMap-x.x.x.zip```
+* the *.tar.gz* file: ```gunzip ORFMap-x.x.x.tar.gz | tar xvf```
 
 
-I. First steps
-------------
-
-1. Uncompress and untar the package:
-
-```bash
-tar -xzvf orfmap-0.0.tgz
+### 2. Create an isolated environment
+Although not strictly necessary, this step is highly recommended (it will allow you to work on different projects without having
+any conflicting library versions).
+ 
+#### Install virtualenv
+``` python
+python3 -m pip install virtualenv
 ```
 
-2. Go to the ORFMap directory
+#### Create a virtual python3 environment
+```bash
+virtualenv -p python3 my_env
+```
+
+#### Activate the created environment
+```bash
+source my_env/bin/activate
+```
+
+Once activated, any python library you'll install using pip will be installed solely in this isolated environment.
+Every time you'll need to work with libraries installed in this environment (i.e. work on your project), you'll have
+to activate it. 
+
+Once you're done working on your project, simply type `deactivate` to exit the environment.
+
+
+### 3. Install ORFMap in your isolated environment
+
+Be sure you're virtual environment is activated, and then follow the procedure described below.
+
+#### Go to the ORFMap directory
  
 ```bash
-cd ORFMap-0.0
+cd ORFMap-x.x.x/
 ```
 
+#### Install 
 
-II. Install the package in a virtual environment (the recommended way to avoid dependencies conflict)
-------------------------------------------------------------------
-
-1. Install virtualenv (if necessary)
-
-```bash
-pip install virtualenv
-```
-
-2. Create a virtual environment (for python3)
-
-```bash
-virtualenv -p python3 env_orfmap
-```
-
-3. Activate your virtual environment
-
-```bash
-source env_orfmap/bin/activate
-```
-
-**Note that once activated:**:
-* you should see the name of your virtual environment in brackets on your terminal line
-* any python commands will now work within your virtual environment
-	
-
-
-4. Install ORFMap in your virtual environment
-
-```bash
+```python
 python setup.py install
 ```
 
-**Note**: once installed, you should be able to run orfmap (see below). Once you don't need to use it, you can deactivate or exit your virtual environment by executing in the terminal:
-
-```bash
-deactivate
-```
-
-From this installation, everytime you'll want to use orfmap you'll need to activate your dedicated virtual environment.
-
-
-
-II_bis. Install the package in the standard python libraries of your system (not recommended)
----------------------------------------------------------------------------------------------
-
-In ORFMap-0.0/:
-
-```bash
-python setup.py install
+or 
+```python
+pip install .
 ```
 
 
-----------------------------------------
-Running ORFMap
-----------------------------------------
+## Quick start
 
 Basic run
 ---------
 
-ORFMap requires two input files: a genomic fasta file (-fna) and its associated GFF file (-gff). The most basic run can be executed by typing:
+ORFMap requires two input files: 
+* a genomic fasta file (-fna)
+* its associated GFF file (-gff).
+
+
+The most basic run can be executed by typing:
 
 ```
 run_orfmap -fna mygenome.fna -gff mygenome.gff
@@ -157,24 +146,33 @@ run_orfmap -h
 
 This command will show:
 
-usage: run_orfmap [-h] -fna [FNA] -gff [GFF] [-type TYPE [TYPE ...]] [-o_include O_INCLUDE [O_INCLUDE ...]] [-o_exclude O_EXCLUDE [O_EXCLUDE ...]] [-orf_len [ORF_LEN]]
-                  [-co_ovp [CO_OVP]] [-out [OUT]]
+<pre>usage: run_orfmap [-h] -fna [FNA] -gff [GFF] [-chr [CHR]] [-types_only TYPES_ONLY [TYPES_ONLY ...]]
+                  [-types_except TYPES_EXCEPT [TYPES_EXCEPT ...]] [-o_include O_INCLUDE [O_INCLUDE ...]] [-o_exclude O_EXCLUDE [O_EXCLUDE ...]]
+                  [-orf_len [ORF_LEN]] [-co_ovp [CO_OVP]] [-out [OUT]] [--show-types] [--show-chrs]
 
 Genomic mapping of pseudo-ORF
 
-
-| Arguments | Description |
-| --- | --- |
-| -h, --help | show this help message and exit |
-| -fna [FNA] | Genomic fasta file (.fna) |
-| -gff [GFF] | GFF annotation file (.gff) |
-| -type TYPE [TYPE ...] | Type feature(s) a flag is desired for ('CDS' in included by default). |
-| -o_include O_INCLUDE [O_INCLUDE ...] | Type feature(s) and/or Status attribute(s) desired to be written in the output (all by default). |
-| -o_exclude O_EXCLUDE [O_EXCLUDE ...] | Type feature(s) and/or Status attribute(s) desired to be excluded (None by default). |
-| -orf_len [ORF_LEN] | Minimum number of nucleotides required to define a sequence between two consecutive stop codons as an ORF sequence (60 nucleotides by default). |
-| -co_ovp [CO_OVP] | Cutoff defining the minimum CDS overlapping ORF fraction required to label on ORF as a CDS. By default, an ORF sequence will be tagged as a CDS if at least 70 per cent of its sequence overlap with the CDS sequence. |
-| -out [OUT] | Output directory |
-
+optional arguments:
+  -h, --help            show this help message and exit
+  -fna [FNA]            Genomic fasta file (.fna)
+  -gff [GFF]            GFF annotation file (.gff)
+  -chr [CHR]            Chromosome name
+  -types_only TYPES_ONLY [TYPES_ONLY ...]
+                        Type feature(s) to use as reference(s) (&apos;CDS&apos; in included by default).
+  -types_except TYPES_EXCEPT [TYPES_EXCEPT ...]
+                        Type feature(s) to not consider as reference(s) (None by default).
+  -o_include O_INCLUDE [O_INCLUDE ...]
+                        Type feature(s) and/or Status attribute(s) desired to be written in the output (all by default).
+  -o_exclude O_EXCLUDE [O_EXCLUDE ...]
+                        Type feature(s) and/or Status attribute(s) desired to be excluded (None by default).
+  -orf_len [ORF_LEN]    Minimum number of nucleotides required to define a sequence between two consecutive stop codons as an ORF sequence (60
+                        nucleotides by default).
+  -co_ovp [CO_OVP]      Cutoff defining the minimum CDS overlapping ORF fraction required to label on ORF as a CDS. By default, an ORF sequence
+                        will be tagged as a CDS if at least 70 per cent of its sequence overlap with the CDS sequence.
+  -out [OUT]            Output directory
+  --show-types          Print all type features
+  --show-chrs           Print all chromosome names
+</pre>
 
 Except -fna and -gff arguments that are mandatory, all others are optional.
 
