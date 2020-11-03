@@ -1,8 +1,15 @@
+
 # ORFMap
 ORFMap - A tool aimed at scanning a genome for stop-codons delimited sequences (ORFs) and annotating them.
- 
-<a href="#target">Description</a>
-## Description
+
+## Summary
+* <p><a href="#descr">Description</a></p>
+* <p><a href="#install">Installation</a></p>
+* <p><a href="#usage_descr">Usage description</a></p>
+* <p><a href="#usage_ex">Some usage examples</a></p>
+
+
+<h2><a name="descr">Description</a></h2>
 
 From a genomic fasta file and its associated GFF, the program first scans the genome to retrieve all sequences
 delimited by stop codons. Only sequences of at least 60 nucleotides long are kept by default.
@@ -42,7 +49,7 @@ The user can also specify what GFF element type(s) can be used as reference(s) t
 * an ORF sequence is considered as overlapping with an element (e.g. CDS) if at least 70 % of its sequence overlap with the element or if this element is totally included within the ORF sequence
 
 
-## Installation procedure from distribution
+<h2><a name="install">Installation</a></h2>
 
 ### 1. Download and uncompress the latest release archive
 
@@ -55,7 +62,6 @@ If you downloaded:
 * the *.zip* file: ```unzip ORFMap-x.x.x.zip```
 * the *.tar.gz* file: ```gunzip ORFMap-x.x.x.tar.gz | tar xvf```
 
-<h3><a name="target"> 2. Create an isolated environment</a></h3>
 
 ### 2. Create an isolated environment
 Although not strictly necessary, this step is highly recommended (it will allow you to work on different projects without having
@@ -105,42 +111,7 @@ pip install .
 ```
 
 
-## Quick start
-
-Basic run
----------
-
-ORFMap requires two input files: 
-* a genomic fasta file (-fna)
-* its associated GFF file (-gff).
-
-
-The most basic run can be executed by typing:
-
-```
-run_orfmap -fna mygenome.fna -gff mygenome.gff
-```
-
-All of the ORF sequences are annotated relative to the CDS element type only. Thus 5 possible annotations are possible:
-
-| ORF annotation | Condition |
-| --- | --- |
-| c_CDS |if the ORF overlap with a CDS in the same phase |
-| nc_5-CDS | if the 5' extremity of the c_CDS is at least 60 nucleotides long |
-| nc_3-CDS | if the 3' extremity of the c_CDS is at least 60 nucleotides long |
-| nc_ovp-CDS | if the ORF overlap with a CDS in a different phase |
-| nc_intergenic | if the ORF do not overlap with anything |
-
-
-The output will be two separated files with the prefix "mapping_orf_":
-* mapping_orf_mygenome.fa: 	a proteic fasta file of all the ORFs sequences found
-* mapping_orf_mygenome.gff:	A GFF file describing all the ORFs sequences found
-  
-By default, the two output files will contain all possible 5 annotations mentionned above.
-
-
-Usage description
------------------
+<h2><a name="usage_descr">Usage description</a></h2>
 
 To see all options available:
 
@@ -181,8 +152,38 @@ optional arguments:
 Except -fna and -gff arguments that are mandatory, all others are optional.
 
 
-Usage examples
------------------
+### Basic run
+
+ORFMap requires two input files: 
+* a genomic fasta file (-fna)
+* its associated GFF file (-gff).
+
+
+The most basic run can be executed by typing:
+
+```
+run_orfmap -fna mygenome.fna -gff mygenome.gff
+```
+
+All of the ORF sequences are annotated relative to the CDS element type only. Thus 5 possible annotations are possible:
+
+| ORF annotation | Condition |
+| --- | --- |
+| c_CDS |if the ORF overlap with a CDS in the same phase |
+| nc_5-CDS | if the 5' extremity of the c_CDS is at least 60 nucleotides long |
+| nc_3-CDS | if the 3' extremity of the c_CDS is at least 60 nucleotides long |
+| nc_ovp-CDS | if the ORF overlap with a CDS in a different phase |
+| nc_intergenic | if the ORF do not overlap with anything |
+
+
+The output will be two separated files with the prefix "mapping_orf_":
+* mapping_orf_mygenome.fa: 	a proteic fasta file of all the ORFs sequences found
+* mapping_orf_mygenome.gff:	A GFF file describing all the ORFs sequences found
+  
+By default, the two output files will contain all possible 5 annotations mentionned above.
+
+
+<h2><a name="usage_ex">Some usage examples</a></h2>
 
 ##### Use tRNA and snRNA element as a reference to annotate ORF sequences:
 ```
