@@ -37,7 +37,7 @@ class Param:
         self.bool_types = args.bool_types
         self.bool_chrs = args.bool_chrs
 
-        self.outpath = args.out + '/'
+        self.outpath = args.out if args.out.endswith('/') else args.out + '/'
         os.makedirs(self.outpath, exist_ok=True)
         self.default_basename = 'mapping_orf_'
         self.default_mainname = '.'.join(os.path.basename(self.fasta_fname).split('.')[:-1])
