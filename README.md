@@ -185,6 +185,24 @@ By default, the two output files will contain all possible 5 annotations mention
 
 <h2><a name="usage_ex">Some usage examples</a></h2>
 
+By default, all element types (except 'region' and 'chromosome') found in the GFF file are used as reference
+to annotate ORF sequences. If an ORF sequence overlaps with more than 2 elements, then the ORF sequence will be assigned
+according to the element with which it overlaps the most. For instance, let's say an ORF sequence overlaps at 85% with
+a tRNA and at 90% with a sRNA, then the ORF will be assigned as nc-ovp_sRNA.
+Note that the CDS element type always has the priority relative to any other element types. Therefore, if an ORF 
+sequence overlaps at 72% with a CDS and at 95% with an other element that is not a CDS, then the ORF will be assigned as
+c_CDS. When an ORF sequence entirely overlaps with multiple elements, then the choice for its  assignment is quite
+arbitrary : the ORF will be assigned depending on the first element met in the GFF. That case could appear for 
+intrinsically related elements such as gene, exon and mRNA. For example, let's say an ORF sequence equally overlaps with
+an exon and a gene region (but there's no overlap with the CDS part). Since the gene normally appears firt in the GFF 
+file, the ORF will be assigned as nc-ovp_gene. In order to avoid those special cases, an option allows the user specify 
+element types that should not be considered as reference for the ORF assignment. 
+
+
+
+
+In the case where an ORF sequence overlaps 
+
 ##### Use tRNA and snRNA element as a reference to annotate ORF sequences:
 ```
 run_orfmap -fna mygenome.fna -gff mygenome.gff -types_only tRNA snRNA -out myResults
