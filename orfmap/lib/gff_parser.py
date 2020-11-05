@@ -189,14 +189,14 @@ class Chromosome:
         self.coors_intervals = self._set_intervals()
         self.gff_elements = []
         
-    def _set_intervals(self, value=10000):
+    def _set_intervals(self, value=50000):
         return {(x, x + value - 1): [] for x in range(1, self.end, value)}
         
     def _get_intervals(self, coors):
         """
         Returns a list of coordinates that overlap with the element coordinates.
         """
-        return (x for x in self.coors_intervals if get_overlap(x, coors)[1])
+        return (x for x in self.coors_intervals if get_overlap(x, coors)[2])
         
     def _add_to_intervals(self):
         last_element = self.gff_elements[-1]
@@ -215,8 +215,8 @@ class Chromosome:
         self._add_to_intervals()
         
     def get_elements_in_intervals(self, coors):
-        intervals_mx = [self.coors_intervals[x] for x in self._get_intervals(coors=coors)]
-        intervals_flat = set([val for sublist in intervals_mx for val in sublist])
+        intervals_mx = (self.coors_intervals[x] for x in self._get_intervals(coors=coors))
+        intervals_flat = sorted(set([val for sublist in intervals_mx for val in sublist]))
 
         return (self.gff_elements[x] for x in intervals_flat)
         
@@ -288,17 +288,19 @@ def get_overlap(orf_coors=(), other_coors=None):
         - a tuple of the overlapping fraction between the ORF and the other element
         (float if overlap, None otherwise)
     """
+    is_overlap = False
     orf_ovp, other_ovp = 0, 0
     x_max = max(orf_coors[0], other_coors[0])
     y_min = min(orf_coors[1], other_coors[1])
     if x_max < y_min:
+        is_overlap = True
         len_ovp = y_min - x_max + 1
         len_orf = orf_coors[1] - orf_coors[0] + 1
         len_other = other_coors[1] - other_coors[0] + 1
-        orf_ovp = round(len_ovp / float(len_orf), 2)
-        other_ovp = round(len_ovp / float(len_other), 2)
+        orf_ovp = len_ovp / float(len_orf)
+        other_ovp = len_ovp / float(len_other)
         
-    return orf_ovp, other_ovp
+    return orf_ovp, other_ovp, is_overlap
 
 
 def get_orfs(gff_chr, orf_len=60):

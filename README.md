@@ -8,7 +8,6 @@ ORFMap - A tool aimed at scanning a genome for stop-codons delimited sequences (
 * <p><a href="#usage_descr">Usage description</a></p>
 * <p><a href="#usage_ex">Some usage examples</a></p>
 
-
 <h2><a name="descr">Description</a></h2>
 
 From a genomic fasta file and its associated GFF, the program first scans the genome to retrieve all sequences

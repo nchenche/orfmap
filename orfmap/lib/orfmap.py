@@ -2,7 +2,6 @@ import os
 from orfmap.lib import logHandler
 from orfmap.lib import gff_parser
 
-
 logger = logHandler.Logger(name=__name__)
 
 
@@ -48,7 +47,6 @@ def get_orfs(gff_chr, param, outfiles: list):
         for n, sequence in enumerate(subsequences):
 
             logger.debug('    - reading frame {} of subsequence {}'.format(str(frame), str(n)))
-            # list of codons in frame "frame"
             codons = (sequence[i:i + 3].upper() for i in range(0, len(sequence), 3) if len(sequence[i:i + 3]) == 3)
 
             start_pos = start_pos if start_pos else frame + 1
@@ -144,17 +142,20 @@ def check_ovp(orf, elements, co_ovp=0.7):
     """
     orf_ovp_max = -1
     if elements:
+        logger.title('ORF {}:{}'.format(orf.start, orf.end))
         for element in elements:
-            orf_ovp, element_ovp = gff_parser.get_overlap(orf_coors=orf.get_coors(), other_coors=element.get_coors())
+            orf_ovp, element_ovp, is_overlap = gff_parser.get_overlap(orf_coors=orf.get_coors(), other_coors=element.get_coors())
             if element_ovp == 1.0 or orf_ovp >= co_ovp:
                 if isinstance(element.phase, int) and element.frame == orf.frame and element.strand == orf.strand:
                     if element not in orf.ovp_phased:
                         orf.ovp_phased.append(element)
                 else:
+                    logger.info('overlapping element: {} {}:{}'.format(element.type, element.start, element.end))
                     if element not in orf.ovp_unphased:
                         if orf_ovp > orf_ovp_max:
                             orf_ovp_max = orf_ovp
                             orf.ovp_unphased.append(element)
+                            logger.info('element added to ovp_unph: {} {}:{}'.format(element.type, element.start, element.end))
 
 
 def set_attributes(orf, orf_len):
@@ -164,6 +165,7 @@ def set_attributes(orf, orf_len):
     orf._set_parent()
     orf._set_color()
     orf._set_status()
+    logger.info('#assigned type: {}'.format(orf.type))
 
     if orf.ovp_phased:
         suborfs = get_suborfs(orf=orf, orf_len=orf_len)
