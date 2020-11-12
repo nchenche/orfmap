@@ -32,7 +32,7 @@ Genecode = {'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
 class Fasta:
     """
 
-    Class used to read/get informations of a chromosome from a genomic fasta file
+    Class used to read/get informations of a chromosome from a genomic fasta file.
 
     """
 
