@@ -57,8 +57,8 @@ Latest release:
 
 #### Uncompress the archive
 If you downloaded:
-* the *.zip* file: ```unzip ORFMap-x.x.x.zip```
-* the *.tar.gz* file: ```gunzip ORFMap-x.x.x.tar.gz | tar xvf```
+* the *.zip* file: ```unzip orfmap-x.x.x.zip```
+* the *.tar.gz* file: ```tar xzvf orfmap-x.x.x.tar.gz```
 
 
 ### 2. Create an isolated environment
@@ -94,7 +94,7 @@ Be sure you're virtual environment is activated, and then follow the procedure d
 #### Go to the ORFMap directory
  
 ```bash
-cd ORFMap-x.x.x/
+cd orfmap-x.x.x/
 ```
 
 #### Install 
