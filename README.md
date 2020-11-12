@@ -53,7 +53,7 @@ The user can also specify what GFF element type(s) can be used as reference(s) t
 
 #### Download the latest release
 Latest release: 
-[ ![](./docs/images/download-flat/16x16.png "Click to download the latest release")](https://github.com/nchenche/orfmap/releases/latest/)
+[ ![](./documentation/images/download-flat/16x16.png "Click to download the latest release")](https://github.com/nchenche/orfmap/releases/latest/)
 
 #### Uncompress the archive
 If you downloaded:
