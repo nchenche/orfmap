@@ -6,6 +6,6 @@ An ORF sequence:
 
  * has a length divisible by 3
  * is bounded by stop codons
- * is at least 60 nucleotides long
+ * is at least 60 nucleotides long (stop codons included)
 
 ![orf_definition](img/mapping/orf_definition.png)

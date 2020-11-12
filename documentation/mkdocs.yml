@@ -7,8 +7,6 @@ nav:
       - Overlap definition: overlap.md
       - ORF annotation: annotation.md
     - Installation:
-      - Download: download.md
-      - Virtual environment: virtualenv.md
       - Install: installation.md
     - Usage:
       - Command line examples: usage.md
@@ -20,3 +18,5 @@ markdown_extensions:
     - toc:
         permalink: "#"
 use_directory_urls: false
+#extra_css:
+#    - css/extra.css
