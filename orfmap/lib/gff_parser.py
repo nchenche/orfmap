@@ -15,7 +15,7 @@ logger = logHandler.Logger(name=__name__)
 class GffElement:
 
     def __init__(self, gff_line=None, fasta_chr=None):
-        self.gff_line = gff_line.split() if gff_line else None
+        self.gff_line = gff_line.split('\t') if gff_line else None
         self.fasta_chr = fasta_chr if fasta_chr else None
         self.len_chr = fasta_chr.nucid_max if fasta_chr else None
 
@@ -38,18 +38,15 @@ class GffElement:
         else:
             self.phase = '.'
             self.frame = None
-            self.init_attributes()
+            self._id = None
+            self.name = None
+            self.parent = None
+            self.status = None
+            self.color = None
 
         self.ovp_phased = []
         self.ovp_unphased = []
         self.suborfs = []
-
-    def init_attributes(self):
-        self._id = None
-        self.name = None
-        self.parent = None
-        self.status = None
-        self.color = None
 
     def _get_attributes(self):
         attributes = self.gff_line[8:][0]
@@ -147,7 +144,12 @@ class GffElement:
         if self.ovp_phased:
             self.type = 'c_CDS'
         elif self.ovp_unphased:
-            highest_overlapping_element = self.ovp_unphased[-1]
+            ovp_elements_same_strand = [x for x in self.ovp_unphased if x.strand == self.strand]
+            if ovp_elements_same_strand:
+                highest_overlapping_element = ovp_elements_same_strand[-1]
+            else:
+                highest_overlapping_element = self.ovp_unphased[-1]
+
             self.type = 'nc_ovp-' + highest_overlapping_element.type
             if highest_overlapping_element.strand != self.strand:
                 self.type += '-opp'
@@ -192,14 +194,14 @@ class Chromosome:
         self.coors_intervals = self._set_intervals()
         self.gff_elements = []
         
-    def _set_intervals(self, value=10000):
+    def _set_intervals(self, value=50000):
         return {(x, x + value - 1): [] for x in range(1, self.end, value)}
         
     def _get_intervals(self, coors):
         """
         Returns a list of coordinates that overlap with the element coordinates.
         """
-        return [x for x in self.coors_intervals if get_overlap(x, coors)[1]]
+        return (x for x in self.coors_intervals if get_overlap(x, coors)[2])
         
     def _add_to_intervals(self):
         last_element = self.gff_elements[-1]
@@ -218,10 +220,10 @@ class Chromosome:
         self._add_to_intervals()
         
     def get_elements_in_intervals(self, coors):
-        intervals_mx = [self.coors_intervals[x] for x in self._get_intervals(coors=coors)]
-        intervals_flat = set([val for sublist in intervals_mx for val in sublist])
+        intervals_mx = (self.coors_intervals[x] for x in self._get_intervals(coors=coors))
+        intervals_flat = sorted(set([val for sublist in intervals_mx for val in sublist]))
 
-        return [self.gff_elements[x] for x in intervals_flat]
+        return (self.gff_elements[x] for x in intervals_flat)
         
     def get_elements(self, coors=None, frame=None, strand=None, types=None):
         """
@@ -241,36 +243,38 @@ class Chromosome:
         if types:
             if coors:
                 if strand:
-                    elements = [x for x in self.get_elements_in_intervals(coors) if x.type in types and x.strand == strand]
+                    elements = (x for x in self.get_elements_in_intervals(coors) if x.type in types and x.strand == strand)
                 else:
-                    elements = [x for x in self.get_elements_in_intervals(coors) if x.type in types]
+                    elements = (x for x in self.get_elements_in_intervals(coors) if x.type in types)
             else:
                 if strand:
-                    elements = [x for x in self.gff_elements if x.type in types and x.strand == strand]
+                    elements = (x for x in self.gff_elements if x.type in types and x.strand == strand)
                 else:
-                    elements = [x for x in self.gff_elements if x.type in types]
+                    elements = (x for x in self.gff_elements if x.type in types)
         else:
             if coors:
                 if strand:
-                    elements = [x for x in self.get_elements_in_intervals(coors) if x.strand == strand]
+                    elements = (x for x in self.get_elements_in_intervals(coors) if x.strand == strand)
                 else:
-                    elements = [x for x in self.get_elements_in_intervals(coors)]
+                    elements = (x for x in self.get_elements_in_intervals(coors))
             else:
                 if strand:
-                    elements = [x for x in self.gff_elements if x.strand == strand]
+                    elements = (x for x in self.gff_elements if x.strand == strand)
                 else:
-                    elements = [x for x in self.gff_elements]
+                    elements = (x for x in self.gff_elements)
 
         if not frame:
             return elements
         else:
-            return [x for x in elements if x.frame == frame]
+            return (x for x in elements if x.frame == frame)
         
     def get_types(self):
         return set([x.type for x in self.gff_elements])
         
-    def sequence(self):
-        return self.fasta_chr.sequence(start=self.start, end=self.end, strand='+', phase=0)
+    def sequence(self, start: int, end: int):
+        start = start if start else self.start
+        end = end if end else self.end
+        return self.fasta_chr.sequence(start=start, end=end, strand='+', phase=0)
                                       
     def rev_comp(self):
         return self.fasta_chr.reverse_complement(self.sequence())
@@ -289,17 +293,19 @@ def get_overlap(orf_coors=(), other_coors=None):
         - a tuple of the overlapping fraction between the ORF and the other element
         (float if overlap, None otherwise)
     """
+    is_overlap = False
     orf_ovp, other_ovp = 0, 0
     x_max = max(orf_coors[0], other_coors[0])
     y_min = min(orf_coors[1], other_coors[1])
     if x_max < y_min:
+        is_overlap = True
         len_ovp = y_min - x_max + 1
         len_orf = orf_coors[1] - orf_coors[0] + 1
         len_other = other_coors[1] - other_coors[0] + 1
-        orf_ovp = round(len_ovp / float(len_orf), 2)
-        other_ovp = round(len_ovp / float(len_other), 2)
+        orf_ovp = len_ovp / float(len_orf)
+        other_ovp = len_ovp / float(len_other)
         
-    return orf_ovp, other_ovp
+    return orf_ovp, other_ovp, is_overlap
 
 
 def get_orfs(gff_chr, orf_len=60):
@@ -408,7 +414,7 @@ def set_gff_descr(gff_fname):
         line = gff_file.readline()
         while line:
             if not line.startswith('#'):
-                name = line.split()[0]
+                name = line.split('\t')[0]
                 pos_chr = gff_file.tell()-len(line)
                 if name not in GFF_DESCR:
                     GFF_DESCR[name] = pos_chr
@@ -420,7 +426,6 @@ def parse(param=None, fasta_hash=None, chr_id=None):
     logger.title('# Parsing GFF file')
 
     gff_fname = param.gff_fname
-    types = param.types
     fasta_hash = fasta_hash
     chr_id = chr_id
 
@@ -442,23 +447,31 @@ def parse(param=None, fasta_hash=None, chr_id=None):
         for chr_id in chr_ids:
             gff_file.seek(GFF_DESCR[chr_id], 0)
             line = gff_file.readline()
-            chr_name = line.split()[0]
+            chr_name = line.split('\t')[0]
             while chr_name == chr_id:
                 if chr_name not in gff_data:
                     logger.debug('  - Reading chromosome: ' + chr_name)
                     gff_data[chr_name] = Chromosome(_id=chr_name, fasta_chr=fasta_hash[chr_id])
                     chromosome = gff_data[chr_name]
-                    chromosome.source = line.split()[1]
+                    chromosome.source = line.split('\t')[1]
 
-                element_type = line.split()[2]
-                if element_type in types:
-                    # logger.debug('Element: ' + '\t'.join(line.split()[:5]))
-                    chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
+                element_type = line.split('\t')[2]
+                if element_type not in ['chromosome', 'region']:
+
+                    if not param.types_except and not param.types_only:
+                        chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
+                    else:
+                        if param.types_except:
+                            if element_type not in param.types_except:
+                                chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
+                        elif param.types_only:
+                            if element_type in param.types_only:
+                                chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
 
                 line = gff_file.readline()
                 if gff_file.tell() == eof:
                     break
                 else:
-                    chr_name = line.split()[0]
+                    chr_name = line.split('\t')[0]
 
     return gff_data

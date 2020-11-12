@@ -4,6 +4,7 @@ Created on Sun Jul 12 16:59:14 2020
 
 @author: nicolas
 """
+import random
 from orfmap.lib import logHandler
 
 logger = logHandler.Logger(name=__name__)
@@ -35,7 +36,25 @@ class Fasta:
 
     """
 
+<<<<<<< HEAD
     base_complement = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G', 'N': 'N', 'R': 'Y', 'Y': 'R'}
+=======
+    base_complement = {'A': 'T',
+                       'T': 'A',
+                       'G': 'C',
+                       'C': 'G',
+                       'N': 'N',
+                       'R': 'Y',
+                       'Y': 'R',
+                       'W': 'N',
+                       'S': 'N',
+                       'M': 'N',
+                       'K': 'N',
+                       'B': 'N',
+                       'D': 'N',
+                       'H': 'N',
+                       'V': 'N'}
+>>>>>>> development
 
     def __init__(self):
         """
@@ -52,7 +71,7 @@ class Fasta:
         off_char (int): difference between seq_len and line_len
 
         """
-        self.fasta_fname: str
+        self.fasta_fname = None
         self.chr = None
         self.curpos_start = None
         self.curpos_end = None
@@ -195,9 +214,16 @@ class Fasta:
 
         sequence = self.sequence(start=start, end=end, phase=phase, strand=strand)
 
-        codons = [sequence[i:i + 3] for i in range(0, len(sequence), 3)]
+        protein = ''
+        codons = (sequence[i:i + 3] for i in range(0, len(sequence), 3))
 
-        return ''.join([Genecode[x.upper()] for x in codons if len(x) == 3])
+        for codon in codons:
+            if codon.upper() not in Genecode.keys():
+                protein += 'X'
+            else:
+                protein += Genecode[codon.upper()]
+
+        return protein
 
     def index_resume(self):
         """
@@ -249,5 +275,8 @@ def parse(fasta_filename):
 
         chr_indexes[-1].curpos_end = fasta_file.tell() - chr_indexes[-1].off_char - 1
         chr_indexes[-1].init_nucid_max()
+
+    # for chr_index in chr_indexes:
+    #     print(chr_index.index_resume())
 
     return {x.chr: x for x in chr_indexes}
