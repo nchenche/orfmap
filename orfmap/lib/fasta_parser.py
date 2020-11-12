@@ -36,8 +36,6 @@ class Fasta:
 
     """
 
-    base_complement = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G', 'N': 'N', 'R': 'Y', 'Y': 'R'}
-=======
     base_complement = {'A': 'T',
                        'T': 'A',
                        'G': 'C',
