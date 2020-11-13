@@ -68,15 +68,7 @@ def get_orfs(gff_chr, param, outfiles: list):
                     else:
                         end_pos_rev = pos * 3 + 1 + 2 + frame
                         if end_pos_rev - start_pos_rev + 1 >= orf_len:
-                            orf = build_orf(gff_chr=gff_chr, strand='+', frame=frame, coors=(start_pos_rev, end_pos_rev))
-
-                            orf = gff_parser.GffElement(fasta_chr=gff_chr.fasta_chr)
-                            orf.seqid = gff_chr._id
-                            orf.source = gff_chr.source
-                            orf.strand = '-'
-                            orf.frame = frame_rev
-                            orf.start = start_pos_rev
-                            orf.end = end_pos_rev - 3
+                            orf = build_orf(gff_chr=gff_chr, strand='-', frame=frame_rev, coors=(start_pos_rev, end_pos_rev))
 
                             suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
                             write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
@@ -113,7 +105,7 @@ def build_orf(gff_chr, strand, frame, coors):
         orf.start = start_pos
     else:
         orf.start = start_pos + 3
-    orf.end = end_pos
+    orf.end = end_pos if strand == '+' else end_pos + 3
 
     return orf
 
@@ -153,7 +145,6 @@ def check_ovp(orf, elements, co_ovp=0.7):
     """
     orf_ovp_max = -1
     if elements:
-        logger.title('ORF {}:{}'.format(orf.start, orf.end))
         for element in elements:
             orf_ovp, element_ovp, is_overlap = gff_parser.get_overlap(orf_coors=orf.get_coors(), other_coors=element.get_coors())
             if element_ovp == 1.0 or orf_ovp >= co_ovp:
@@ -161,12 +152,10 @@ def check_ovp(orf, elements, co_ovp=0.7):
                     if element not in orf.ovp_phased:
                         orf.ovp_phased.append(element)
                 else:
-                    logger.info('overlapping element: {} {}:{}'.format(element.type, element.start, element.end))
                     if element not in orf.ovp_unphased:
                         if orf_ovp > orf_ovp_max:
                             orf_ovp_max = orf_ovp
                             orf.ovp_unphased.append(element)
-                            logger.info('element added to ovp_unph: {} {}:{}'.format(element.type, element.start, element.end))
 
 
 def set_attributes(orf, orf_len):
