@@ -140,7 +140,7 @@ class GffElement:
 
             return gff_line + '\n'
 
-    def _set_type(self):
+    def set_type(self):
         if self.ovp_phased:
             self.type = 'c_CDS'
         elif self.ovp_unphased:
@@ -161,10 +161,10 @@ class GffElement:
                          str(self.start)+'-'+str(self.end),
                          str(self.frame), self.type])
 
-    def _set_parent(self):
+    def set_parent(self):
         self.parent = self.seqid+'_'+'1-'+str(self.len_chr)
 
-    def _set_color(self):
+    def set_color(self):
         if self.type == 'c_CDS':
             self.color = '#ff4d00'  # ff4d4d
         else:
@@ -176,7 +176,7 @@ class GffElement:
                 else:
                     self.color = '#2935d6'
 
-    def _set_status(self):
+    def set_status(self):
         if self.ovp_phased:
             self.status = 'coding'
         else:

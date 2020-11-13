@@ -13,7 +13,7 @@ def get_infos(_input: str, option: str):
         with open(_input, 'r') as gff_file:
             for line in gff_file:
                 if not line.startswith('#'):
-                    chr_name = line.split()[0]
+                    chr_name = line.split('\t')[0]
                     if chr_name not in chr_names:
                         chr_names.append(chr_name)
                         print(chr_name)

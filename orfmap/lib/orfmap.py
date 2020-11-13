@@ -80,19 +80,13 @@ def get_orfs(gff_chr, param, outfiles: list):
             start_pos_rev = end_pos_rev - 2
             end_pos_rev = pos * 3 + 1 + 2 + frame
             if end_pos_rev - start_pos_rev + 1 >= orf_len:
-                orf = gff_parser.GffElement(fasta_chr=gff_chr.fasta_chr)
-                orf.seqid = gff_chr._id
-                orf.source = gff_chr.source
-                orf.strand = '-'
-                orf.frame = frame_rev
-                orf.start = start_pos_rev
-                orf.end = end_pos_rev
+                orf = build_orf(gff_chr=gff_chr, strand='-', frame=frame_rev, coors=(start_pos_rev, end_pos_rev), extremity=True)
 
                 suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
                 write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
 
 
-def build_orf(gff_chr, strand, frame, coors):
+def build_orf(gff_chr, strand, frame, coors, extremity=False):
     start_pos = coors[0]
     end_pos = coors[1]
 
@@ -101,11 +95,17 @@ def build_orf(gff_chr, strand, frame, coors):
     orf.source = gff_chr.source
     orf.strand = strand
     orf.frame = frame
-    if start_pos == frame + 1:
-        orf.start = start_pos
+
+    if strand == '+':
+        if start_pos == frame + 1:
+            orf.start = start_pos
+        else:
+            orf.start = start_pos + 3
+        orf.end = end_pos
+
     else:
-        orf.start = start_pos + 3
-    orf.end = end_pos if strand == '+' else end_pos + 3
+        orf.start = start_pos
+        orf.end = end_pos - 3 if not extremity else end_pos
 
     return orf
 
@@ -160,12 +160,11 @@ def check_ovp(orf, elements, co_ovp=0.7):
 
 def set_attributes(orf, orf_len):
     suborfs = []
-    orf._set_type()
+    orf.set_type()
     orf._id = orf.format_id()
-    orf._set_parent()
-    orf._set_color()
-    orf._set_status()
-    logger.info('#assigned type: {}'.format(orf.type))
+    orf.set_parent()
+    orf.set_color()
+    orf.set_status()
 
     if orf.ovp_phased:
         suborfs = get_suborfs(orf=orf, orf_len=orf_len)
