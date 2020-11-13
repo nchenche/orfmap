@@ -31,7 +31,7 @@ def get_orfs(gff_chr, param, outfiles: list):
     max_subsequence_length = 1999998
     out_gff = outfiles[0]
     out_fasta = outfiles[1]
-    orf_len = param.orf_len
+    orf_len = param.orf_len + 6
     pos = 0
 
     # loops on each possible frame (the negative frame is defined in "frame_rev")
@@ -55,16 +55,7 @@ def get_orfs(gff_chr, param, outfiles: list):
                 if codon in ['TAG', 'TGA', 'TAA']:
                     end_pos = pos * 3 + 1 + 2 + frame
                     if end_pos - start_pos + 1 >= orf_len:
-                        orf = gff_parser.GffElement(fasta_chr=gff_chr.fasta_chr)
-                        orf.seqid = gff_chr._id
-                        orf.source = gff_chr.source
-                        orf.strand = '+'
-                        orf.frame = frame
-                        if start_pos == frame + 1:
-                            orf.start = start_pos
-                        else:
-                            orf.start = start_pos + 3
-                        orf.end = end_pos
+                        orf = build_orf(gff_chr=gff_chr, strand='+', frame=frame, coors=(start_pos, end_pos))
 
                         suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
                         write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
@@ -77,6 +68,8 @@ def get_orfs(gff_chr, param, outfiles: list):
                     else:
                         end_pos_rev = pos * 3 + 1 + 2 + frame
                         if end_pos_rev - start_pos_rev + 1 >= orf_len:
+                            orf = build_orf(gff_chr=gff_chr, strand='+', frame=frame, coors=(start_pos_rev, end_pos_rev))
+
                             orf = gff_parser.GffElement(fasta_chr=gff_chr.fasta_chr)
                             orf.seqid = gff_chr._id
                             orf.source = gff_chr.source
@@ -105,6 +98,24 @@ def get_orfs(gff_chr, param, outfiles: list):
 
                 suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
                 write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
+
+
+def build_orf(gff_chr, strand, frame, coors):
+    start_pos = coors[0]
+    end_pos = coors[1]
+
+    orf = gff_parser.GffElement(fasta_chr=gff_chr.fasta_chr)
+    orf.seqid = gff_chr._id
+    orf.source = gff_chr.source
+    orf.strand = strand
+    orf.frame = frame
+    if start_pos == frame + 1:
+        orf.start = start_pos
+    else:
+        orf.start = start_pos + 3
+    orf.end = end_pos
+
+    return orf
 
 
 def write_outputs(out_fasta, out_gff, orf, suborfs, param):

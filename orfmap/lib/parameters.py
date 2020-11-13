@@ -92,7 +92,7 @@ def get_args():
     parser.add_argument("-o_exclude", required=False, nargs="+", default=[],
                         help="Type feature(s) and/or Status attribute(s) desired to be excluded (None by default).")
     parser.add_argument("-orf_len", required=False, nargs="?", default=60, type=int,
-                        help="Minimum number of nucleotides required to define a sequence between two consecutive stop codons\
+                        help="Minimum number of coding nucleotides required to define a sequence between two consecutive stop codons\
                          as an ORF sequence (60 nucleotides by default).")
     parser.add_argument("-co_ovp", required=False, nargs="?", default=0.7, type=float,
                         help="Cutoff defining the minimum CDS overlapping ORF fraction required to label on ORF as a CDS.\
