@@ -85,8 +85,8 @@ def get_args():
                         help="Chromosome name")
     parser.add_argument("-types_only", required=False, nargs="+", default=[],
                         help="Type feature(s) to use as reference(s) ('CDS' in included by default).")
-    parser.add_argument("-types_except", required=False, nargs="+", default=[],
-                        help="Type feature(s) to not consider as reference(s) (None by default).")
+    parser.add_argument("-types_except", required=False, nargs="+", default=['gene', 'exon'],
+                        help="Type feature(s) to not consider as reference(s) ('gene' and 'exon' by default).")
     parser.add_argument("-o_include", required=False, nargs="+", default=['all'],
                         help="Type feature(s) and/or Status attribute(s) desired to be written in the output (all by default).")
     parser.add_argument("-o_exclude", required=False, nargs="+", default=[],
