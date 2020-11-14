@@ -17,7 +17,8 @@ class GffElement:
     def __init__(self, gff_line=None, fasta_chr=None):
         self.gff_line = gff_line.split('\t') if gff_line else None
         self.fasta_chr = fasta_chr if fasta_chr else None
-        self.len_chr = fasta_chr.nucid_max if fasta_chr else None
+        self.ll\
+            = fasta_chr.nucid_max if fasta_chr else None
 
         self.seqid = self.gff_line[0] if gff_line else None
         self.source = self.gff_line[1] if gff_line else None
