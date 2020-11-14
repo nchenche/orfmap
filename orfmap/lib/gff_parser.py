@@ -144,11 +144,20 @@ class GffElement:
         if self.ovp_phased:
             self.type = 'c_CDS'
         elif self.ovp_unphased:
-            ovp_elements_same_strand = [x for x in self.ovp_unphased if x.strand == self.strand]
-            if ovp_elements_same_strand:
-                highest_overlapping_element = ovp_elements_same_strand[-1]
+            if 'CDS' in [x.type for x in self.ovp_unphased]:
+                ovp_unphased_CDS = [x for x in self.ovp_unphased if x.type == 'CDS']
+
+                ovp_elements_same_strand = [x for x in ovp_unphased_CDS if x.strand == self.strand]
+                if ovp_elements_same_strand:
+                    highest_overlapping_element = ovp_elements_same_strand[-1]
+                else:
+                    highest_overlapping_element = ovp_unphased_CDS[-1]
             else:
-                highest_overlapping_element = self.ovp_unphased[-1]
+                ovp_elements_same_strand = [x for x in self.ovp_unphased if x.strand == self.strand]
+                if ovp_elements_same_strand:
+                    highest_overlapping_element = ovp_elements_same_strand[-1]
+                else:
+                    highest_overlapping_element = self.ovp_unphased[-1]
 
             self.type = 'nc_ovp-' + highest_overlapping_element.type
             if highest_overlapping_element.strand != self.strand:
