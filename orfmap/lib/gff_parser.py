@@ -27,6 +27,9 @@ class GffElement:
         self.score = self.gff_line[5] if gff_line else '.'
         self.strand = self.gff_line[6] if gff_line else None
 
+        self.idx = None
+        self.nb = None
+
         if gff_line:
             if self.gff_line[7] != '.':
                 self.phase = int(self.gff_line[7])
@@ -38,7 +41,7 @@ class GffElement:
         else:
             self.phase = '.'
             self.frame = None
-            self._id = None
+            self.id_ = None
             self.name = None
             self.parent = None
             self.status = None
@@ -47,18 +50,19 @@ class GffElement:
         self.ovp_phased = []
         self.ovp_unphased = []
         self.suborfs = []
+        self.orf_ovp = None
 
     def _get_attributes(self):
         attributes = self.gff_line[8:][0]
 
         if 'ID' in attributes:
-            self._id = self._parse_attributes(key='ID')
+            self.id_ = self._parse_attributes(key='ID')
         else:
-            self._id = '_'.join([self.type, str(self.start), str(self.end), self.strand])
+            self.id_ = '_'.join([self.type, str(self.start), str(self.end), self.strand])
         if 'Name' in attributes:
             self.name = self._parse_attributes(key='Name')
         else:
-            self.name = self._id
+            self.name = self.id_
 
         if 'Parent' in attributes:
             self.parent = self._parse_attributes(key='Parent')
@@ -74,13 +78,10 @@ class GffElement:
         return attribute.split('=')[-1]
 
     def _get_frame(self):
-        if isinstance(self.phase, int) or 'ORF' in self.type:
-            if self.strand == '+':
-                return (self.get_coors()[0] - 1) % 3
-            else:
-                return (self.len_chr - self.get_coors()[1]) % 3
+        if self.strand == '+':
+            return (self.get_coors()[0] - 1) % 3
         else:
-            return None
+            return (self.len_chr - self.get_coors()[1]) % 3
 
     def get_coors(self):
         return self._coors_adjusted()
@@ -112,12 +113,14 @@ class GffElement:
         return self.fasta_chr.translate(start=self.start, end=self.end, strand=self.strand, phase=self.phase)
 
     def get_fastaline(self):
-        fastaline = '>'+self._id+'\n'+self.translate()+'\n'
+        fastaline = '>'+self.id_+'\n'+self.translate()+'\n'
 
         return fastaline
 
     def get_gffline(self):
-        if self.gff_line and self.type not in ['nc_5-CDS', 'nc_3-CDS']:
+        # if self.gff_line and 'frag' not in self.type:
+        #     return '\t'.join(self.gff_line)
+        if not self.status:
             return '\t'.join(self.gff_line)
         else:
             gff_line = self.seqid
@@ -140,34 +143,78 @@ class GffElement:
 
             return gff_line + '\n'
 
-    def set_type(self):
+    def run_assignment(self, elements, param, is_fragment=False):
+        self.set_ovp_elements(elements=elements, co_ovp=param.co_ovp)
+        self.set_attributes(is_fragment=is_fragment)
+
+    def set_attributes(self, is_fragment=False):
+        self.set_type(is_fragment=is_fragment)
+        self.id_ = self.format_id()
+        self.set_parent()
+        self.set_color()
+        self.set_status()
+
+    def set_ovp_elements(self, elements=None, co_ovp=0.7):
+        """
+
+        Adds ORF overlapping elements to either self.ovp_phased or self..ovp_unphased lists.
+
+        Args:
+            elements (list[GffElement]): elements of the GFF input files
+            co_ovp (float): cutoff used to define an overlapping element with an ORF
+
+        Returns:
+            None
+
+        """
+        if elements:
+            # orf_ovp_max = -1
+            for element in elements:
+                orf_ovp, element_ovp, is_overlap = get_overlap(orf_coors=self.get_coors(), other_coors=element.get_coors())
+                if element_ovp == 1.0 or orf_ovp >= co_ovp:
+                    if isinstance(element.phase, int) and element.frame == self.frame and element.strand == self.strand:
+                        if element not in self.ovp_phased:
+                            self.ovp_phased.append(element)
+                    else:
+                        if element not in self.ovp_unphased:
+                            element.orf_ovp = orf_ovp
+                            self.ovp_unphased.append(element)
+                        # if element not in self.ovp_unphased:
+                        #     if orf_ovp > orf_ovp_max:
+                        #         orf_ovp_max = orf_ovp
+                        #         self.ovp_unphased.append(element)
+
+    def set_type(self, is_fragment=False):
         if self.ovp_phased:
             self.type = 'c_CDS'
+
         elif self.ovp_unphased:
             if 'CDS' in [x.type for x in self.ovp_unphased]:
-                ovp_unphased_CDS = [x for x in self.ovp_unphased if x.type == 'CDS']
-
-                ovp_elements_same_strand = [x for x in ovp_unphased_CDS if x.strand == self.strand]
-                if ovp_elements_same_strand:
-                    highest_overlapping_element = ovp_elements_same_strand[-1]
-                else:
-                    highest_overlapping_element = ovp_unphased_CDS[-1]
+                ovp_unphased_elements = [x for x in self.ovp_unphased if x.type == 'CDS']
             else:
-                ovp_elements_same_strand = [x for x in self.ovp_unphased if x.strand == self.strand]
-                if ovp_elements_same_strand:
-                    highest_overlapping_element = ovp_elements_same_strand[-1]
-                else:
-                    highest_overlapping_element = self.ovp_unphased[-1]
+                ovp_unphased_elements = self.ovp_unphased
 
-            self.type = 'nc_ovp-' + highest_overlapping_element.type
-            if highest_overlapping_element.strand != self.strand:
-                self.type += '-opp'
+            ovp_elements_same_strand = [x for x in ovp_unphased_elements if x.strand == self.strand]
+            if ovp_elements_same_strand:
+                highest_overlapping_element = sorted([x for x in ovp_elements_same_strand], key=lambda x: x.orf_ovp)[-1]
+            else:
+                highest_overlapping_element = sorted([x for x in ovp_unphased_elements], key=lambda x: x.orf_ovp)[-1]
+
+            if not is_fragment:
+                self.type = 'nc_ovp-' + highest_overlapping_element.type
+                if highest_overlapping_element.strand != self.strand:
+                    self.type += '-opp'
+            else:
+                self.type += '_ovp-' + highest_overlapping_element.type
+                if highest_overlapping_element.strand != self.strand:
+                    self.type += '-opp'
         else:
-            self.type = 'nc_intergenic'
+            if not is_fragment:
+                self.type = 'nc_intergenic'
 
     def format_id(self):
         return '_'.join([self.seqid, self.strand,
-                         str(self.start)+'-'+str(self.end),
+                         str(self.start) + '-' + str(self.end),
                          str(self.frame), self.type])
 
     def set_parent(self):
@@ -191,11 +238,86 @@ class GffElement:
         else:
             self.status = 'non-coding'
 
+    def fragment_phased_cds(self, orf_len=60):
+        """
+
+        Function that fragments an ORF sequence at the borders of its overlapping CDS in the same frame.
+
+        Given this illustrative configuration:
+
+        *-----------|CDS1|-------|CDS2|------------*
+
+
+        The fragmentation process will give three shorter ORFs called suborfs:
+
+        nc_5-CDSfrag
+        *-----------|
+                      nc_intra-CDSfrag
+                         |-------|
+                                       nc_3-CDSfrag
+                                      |------------*
+
+        Note that a fragment is considered a suborf only if its length is at least equal to orf_len.
+
+        """
+        cds_ele = None
+        cds_elements = sorted(self.ovp_phased, key=lambda x: x.start, reverse=False)
+
+        for i, cds_ele in enumerate(cds_elements):
+            if cds_ele.start == self.start:
+                continue
+            start = self.start if i == 0 else cds_elements[i-1].end + 1
+            end = cds_elements[i].start - 1
+
+            if end - start + 1 >= orf_len:
+                fragment = GffElement(gff_line=self.get_gffline(), fasta_chr=self.fasta_chr)
+                fragment.start = start
+                fragment.end = end
+
+                if self.strand == '+':
+                    if cds_elements[i].idx == 1:
+                        fragment.type = 'nc_5-CDSfrag'
+                    else:
+                        fragment.type = 'nc_intra-CDSfrag'
+                else:
+                    if cds_ele.idx == cds_ele.nb:
+                        fragment.type = 'nc_3-CDSfrag'
+                    else:
+                        fragment.type = 'nc_intra-CDSfrag'
+
+                self.suborfs.append(fragment)
+
+        if cds_ele.end != self.end:
+            start = cds_ele.end + 1
+            end = self.end
+            if end - start + 1 >= orf_len:
+                fragment = GffElement(gff_line=self.get_gffline(), fasta_chr=self.fasta_chr)
+                fragment.start = start
+                fragment.end = end
+
+                if cds_ele.idx == cds_ele.nb:
+                    fragment.type = 'nc_3-CDSfrag' if self.strand == '+' else 'nc_5-CDSfrag'
+                else:
+                    fragment.type = 'nc_intra-CDSfrag'
+
+                if self.strand == '+':
+                    if cds_ele.idx == cds_ele.nb:
+                        fragment.type = 'nc_3-CDSfrag'
+                    else:
+                        fragment.type = 'nc_intra-CDSfrag'
+                else:
+                    if cds_ele.idx == 1:
+                        fragment.type = 'nc_5-CDSfrag'
+                    else:
+                        fragment.type = 'nc_intra-CDSfrag'
+
+                self.suborfs.append(fragment)
+
 
 class Chromosome:
 
-    def __init__(self, _id, fasta_chr):
-        self._id = _id
+    def __init__(self, id_, fasta_chr):
+        self.id_ = id_
         self.fasta_chr = fasta_chr
         self.start = 1
         self.end = fasta_chr.nucid_max
@@ -204,15 +326,46 @@ class Chromosome:
         self.gff_elements = []
         
     def _set_intervals(self, value=50000):
+        """
+
+        Defines a dictionary containing a set of intervals as keys and an empty list as values.
+
+        For instance, for @param value = 50000:
+
+        {(1, 49999): [],
+         (50000, 99999): [],
+         ...
+         }
+
+        """
         return {(x, x + value - 1): [] for x in range(1, self.end, value)}
         
     def _get_intervals(self, coors):
         """
-        Returns a list of coordinates that overlap with the element coordinates.
+
+        Returns a tuple/generator of interval coordinates that overlap with the coordinates given in coors.
+
+        If self.coors_intervals is defined as describe in _set_intervals() and coors=(47500, 52000),
+        then the function will return ((1, 49999), (50000, 99999))
+
         """
         return (x for x in self.coors_intervals if get_overlap(x, coors)[2])
         
     def _add_to_intervals(self):
+        """
+
+        Adds the index of the self.gff_elements last element in the correct intervals list of self.coors_intervals.
+
+        For example, if self.coors_intervals is defined as describe in _set_intervals() and
+        the coordinates of the last element are (47500, 52000), then the index of the last element will be added as follow:
+
+        {(1, 49999): [..., last_element_idx],
+         (50000, 99999): [..., last_element_idx],
+         (100000, 149999): [...],
+         ...
+         }
+
+        """
         last_element = self.gff_elements[-1]
         for interval in self._get_intervals(coors=last_element.get_coors()):
             self.coors_intervals[interval].append(self.gff_elements.index(last_element))
@@ -224,11 +377,23 @@ class Chromosome:
         Arguments:
             - gff_element: instance of Gff_element()
         """
-        
         self.gff_elements.append(gff_element)
         self._add_to_intervals()
         
     def get_elements_in_intervals(self, coors):
+        """
+
+        Returns all gffElement instances overlapping with coors.
+
+        intervals_mx is a tuple/generator of lists of self.coors_intervals values overlapping with coors. For example,
+        if coors=(47500, 52000), then intervals_mx will be: ([..., element_i, element_j, ...], [element_j, element_k, ...])
+        where element_i (and others) are indexes of elements in self.gff_elements.
+
+        intervals_flat flattens the matrix, remove redundant elements and sort them. For example, according to the case
+        above, intervals_flat will be: (..., element_i, element_j, element_k, ...).
+
+
+        """
         intervals_mx = (self.coors_intervals[x] for x in self._get_intervals(coors=coors))
         intervals_flat = sorted(set([val for sublist in intervals_mx for val in sublist]))
 
@@ -242,7 +407,7 @@ class Chromosome:
         Arguments:
             - frame: None or int in 0, 1 or 2
             - strand: None or str in '+' or '-'
-            - coors: None or list of coors in the form [(104, 395), ...]
+            - coors: None or list of coors in the form [104, 395]
             - types: None or list of str (e.g. ['CDS', 'tRNA']
             
         Returns:
@@ -280,13 +445,39 @@ class Chromosome:
     def get_types(self):
         return set([x.type for x in self.gff_elements])
         
-    def sequence(self, start: int, end: int):
+    def sequence(self, start: int, end: int, strand='+', phase=0):
         start = start if start else self.start
         end = end if end else self.end
-        return self.fasta_chr.sequence(start=start, end=end, strand='+', phase=0)
+        return self.fasta_chr.sequence(start=start, end=end, strand=strand, phase=phase)
                                       
     def rev_comp(self):
-        return self.fasta_chr.reverse_complement(self.sequence())
+        return self.fasta_chr.reverse_complement(self.sequence(start=1, end=10))
+
+    def get_cds(self):
+        return (x for x in self.gff_elements if x.type == 'CDS')
+
+    def group_cds(self):
+        proteins_dict = {}
+        for cds in self.get_cds():
+            if cds.name not in proteins_dict:
+                proteins_dict[cds.name] = []
+            proteins_dict[cds.name].append(cds)
+
+        return proteins_dict
+
+    def proteins_fasta(self):
+        proteins = self.group_cds()
+        for protein in sorted(proteins):
+            fasta = '>' + protein + ':' + self.id_ + '\n'
+            fasta += ''.join([cds.translate() for cds in proteins[protein]]) + '\n'
+            yield fasta
+
+    def index_cds(self):
+        proteins = self.group_cds()
+        for protein in sorted(proteins):
+            for i, cds in enumerate(proteins[protein], start=1):
+                cds.idx = i
+                cds.nb = len(proteins[protein])
 
 
 def get_overlap(orf_coors=(), other_coors=None):
@@ -315,101 +506,6 @@ def get_overlap(orf_coors=(), other_coors=None):
         other_ovp = len_ovp / float(len_other)
         
     return orf_ovp, other_ovp, is_overlap
-
-
-def get_orfs(gff_chr, orf_len=60):
-    orfs = []
-    sequence = gff_chr.sequence()
-    pos = 0
-
-    # loops on each possible frame (the negative frame is defined in "frame_rev")
-    for frame in range(3):
-        # list of codons in frame "frame"
-        codons = [sequence[i:i+3].upper() for i in range(frame, len(sequence), 3) if len(sequence[i:i+3]) == 3]
-
-        start_pos = frame + 1
-
-        frame_rev = (gff_chr.end % 3 - frame) % 3
-        start_pos_rev = None
-        end_pos_rev = None
-       
-        for pos, codon in enumerate(codons):
-            if codon in ['TAG', 'TGA', 'TAA']:
-                end_pos = pos*3 + 1 + 2 + frame
-                if end_pos - start_pos + 1 >= orf_len:
-                    orf = GffElement(fasta_chr=gff_chr.fasta_chr)
-                    orf.seqid = gff_chr._id
-                    orf.source = gff_chr.source
-                    orf.strand = '+'
-                    orf.frame = frame
-                    if start_pos == frame + 1:
-                        orf.start = start_pos
-                    else:
-                        orf.start = start_pos + 3
-                    orf.end = end_pos
-                    orfs.append(orf)
-
-                start_pos = end_pos - 2
-                    
-            elif codon in ['CTA', 'TCA', 'TTA']:
-                if start_pos_rev is None:
-                    start_pos_rev = pos*3 + 1 + frame
-                else:
-                    end_pos_rev = pos*3 + 1 + 2 + frame
-                    if end_pos_rev - start_pos_rev + 1 >= orf_len:
-                        orf = GffElement(fasta_chr=gff_chr.fasta_chr)
-                        orf.seqid = gff_chr._id
-                        orf.source = gff_chr.source
-                        orf.strand = '-'
-                        orf.frame = frame_rev
-                        orf.start = start_pos_rev
-                        orf.end = end_pos_rev - 3
-                        orfs.append(orf)
-                        
-                    start_pos_rev = end_pos_rev - 2
-        
-        # adds coordinates of ORF in extremities
-        if end_pos_rev:
-            start_pos_rev = end_pos_rev - 2
-            end_pos_rev = pos*3 + 1 + 2 + frame
-            if end_pos_rev - start_pos_rev + 1 >= orf_len:
-                orf = GffElement(fasta_chr=gff_chr.fasta_chr)
-                orf.seqid = gff_chr._id
-                orf.source = gff_chr.source
-                orf.strand = '-'
-                orf.frame = frame_rev
-                orf.start = start_pos_rev
-                orf.end = end_pos_rev
-                orfs.append(orf)
-                
-    return orfs
-
-
-def is_orf_asked(orf=None, param=None):
-    if 'all' in param.include:
-        if not param.exclude:
-            return True
-        else:
-            if not is_orf_exclude(orf=orf, exclude=param.exclude):
-                return True
-            else:
-                return False
-    else:
-        if is_orf_include(orf=orf, include=param.include):
-            if not is_orf_exclude(orf=orf, exclude=param.exclude):
-                return True
-            else:
-                return False
-        else:
-            return False
-
-
-def is_orf_include(orf=None, include=None):
-    return True in [x in [orf.type, orf.status] for x in include]
-
-
-def is_orf_exclude(orf=None, exclude=None):
-    return True in [x in [orf.type, orf.status] for x in exclude]
 
 
 GFF_DESCR = {}
@@ -460,13 +556,12 @@ def parse(param=None, fasta_hash=None, chr_id=None):
             while chr_name == chr_id:
                 if chr_name not in gff_data:
                     logger.debug('  - Reading chromosome: ' + chr_name)
-                    gff_data[chr_name] = Chromosome(_id=chr_name, fasta_chr=fasta_hash[chr_id])
+                    gff_data[chr_name] = Chromosome(id_=chr_name, fasta_chr=fasta_hash[chr_id])
                     chromosome = gff_data[chr_name]
                     chromosome.source = line.split('\t')[1]
 
                 element_type = line.split('\t')[2]
                 if element_type not in ['chromosome', 'region']:
-
                     if not param.types_except and not param.types_only:
                         chromosome.add(gff_element=GffElement(gff_line=line, fasta_chr=fasta_hash[chr_id]))
                     else:
@@ -483,4 +578,14 @@ def parse(param=None, fasta_hash=None, chr_id=None):
                 else:
                     chr_name = line.split('\t')[0]
 
+    for chr_name in sorted(gff_data):
+        gff_data[chr_name].index_cds()
+
     return gff_data
+
+
+def get_parent(gff_line):
+    attributes = gff_line.split('\t')[8:][0].split(';')
+    parent = [x for x in attributes if 'Parent' in x][0].split('=')[-1]
+
+    return parent

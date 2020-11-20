@@ -1,4 +1,5 @@
 import os
+import sys
 from orfmap.lib import logHandler
 from orfmap.lib import gff_parser
 
@@ -55,10 +56,9 @@ def get_orfs(gff_chr, param, outfiles: list):
                 if codon in ['TAG', 'TGA', 'TAA']:
                     end_pos = pos * 3 + 1 + 2 + frame
                     if end_pos - start_pos + 1 >= orf_len:
-                        orf = build_orf(gff_chr=gff_chr, strand='+', frame=frame, coors=(start_pos, end_pos))
-
-                        suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
-                        write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
+                        orf = build_orf(gff_chr=gff_chr, strand='+', frame=frame, coors=(start_pos, end_pos),
+                                        param=param)
+                        write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, param=param)
 
                     start_pos = end_pos - 2
 
@@ -68,30 +68,28 @@ def get_orfs(gff_chr, param, outfiles: list):
                     else:
                         end_pos_rev = pos * 3 + 1 + 2 + frame
                         if end_pos_rev - start_pos_rev + 1 >= orf_len:
-                            orf = build_orf(gff_chr=gff_chr, strand='-', frame=frame_rev, coors=(start_pos_rev, end_pos_rev))
-
-                            suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
-                            write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
+                            orf = build_orf(gff_chr=gff_chr, strand='-', frame=frame_rev, coors=(start_pos_rev, end_pos_rev),
+                                            param=param)
+                            write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, param=param)
 
                         start_pos_rev = end_pos_rev - 2
 
-        # adds coordinates of ORF in extremities
+        # adds coordinates of ORF in negative strand extremity
         if end_pos_rev:
             start_pos_rev = end_pos_rev - 2
             end_pos_rev = pos * 3 + 1 + 2 + frame
             if end_pos_rev - start_pos_rev + 1 >= orf_len:
-                orf = build_orf(gff_chr=gff_chr, strand='-', frame=frame_rev, coors=(start_pos_rev, end_pos_rev), extremity=True)
+                orf = build_orf(gff_chr=gff_chr, strand='-', frame=frame_rev, coors=(start_pos_rev, end_pos_rev),
+                                param=param, extremity=True)
+                write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, param=param)
 
-                suborfs = assignment(orf=orf, gff_chr=gff_chr, param=param)
-                write_outputs(out_fasta=out_fasta, out_gff=out_gff, orf=orf, suborfs=suborfs, param=param)
 
-
-def build_orf(gff_chr, strand, frame, coors, extremity=False):
+def build_orf(gff_chr, strand, frame, coors, param, extremity=False):
     start_pos = coors[0]
     end_pos = coors[1]
 
     orf = gff_parser.GffElement(fasta_chr=gff_chr.fasta_chr)
-    orf.seqid = gff_chr._id
+    orf.seqid = gff_chr.id_
     orf.source = gff_chr.source
     orf.strand = strand
     orf.frame = frame
@@ -107,122 +105,37 @@ def build_orf(gff_chr, strand, frame, coors, extremity=False):
         orf.start = start_pos
         orf.end = end_pos - 3 if not extremity else end_pos
 
+    elements_around_orf = gff_chr.get_elements(coors=orf.get_coors())
+
+    orf.run_assignment(elements=gff_chr.get_elements(coors=orf.get_coors()),
+                       param=param, is_fragment=False)
+    if orf.type == "c_CDS" and orf.ovp_phased:
+        orf.fragment_phased_cds(orf_len=param.orf_len)
+        if orf.suborfs:
+            logger.info('* ORF CDS: {}:{} {} {} *'.format(orf.start, orf.end, orf.strand, orf.frame))
+            for suborf in orf.suborfs:
+                suborf.run_assignment(elements=gff_chr.get_elements(coors=suborf.get_coors()),
+                                      param=param, is_fragment=True)
+                if suborf.ovp_unphased:
+                    logger.info('  - suborf coors: {}:{}'.format(suborf.start, suborf.end))
+                    logger.info('  - suborf strand: {}'.format(suborf.strand))
+                    logger.info('  - suborf type: {}'.format(suborf.type))
+                    logger.info('  - suborf frame: {}'.format(suborf.frame))
+                    logger.info('  - suborf id: {}'.format(suborf.id_))
+                    logger.info('')
+
     return orf
 
 
-def write_outputs(out_fasta, out_gff, orf, suborfs, param):
+def write_outputs(out_fasta, out_gff, orf, param):
     if is_orf_asked(orf=orf, param=param):
         out_gff.write(orf.get_gffline())
         out_fasta.write(orf.get_fastaline())
-    if suborfs:
-        for suborf in suborfs:
+    if orf.suborfs:
+        for suborf in orf.suborfs:
             if is_orf_asked(orf=suborf, param=param):
                 out_gff.write(suborf.get_gffline())
                 out_fasta.write(suborf.get_fastaline())
-
-
-def assignment(orf, gff_chr, param):
-    elements = gff_chr.get_elements(coors=orf.get_coors())
-    check_ovp(orf=orf, elements=elements, co_ovp=param.co_ovp)
-    suborfs = set_attributes(orf=orf, orf_len=param.orf_len)
-
-    return suborfs
-
-
-def check_ovp(orf, elements, co_ovp=0.7):
-    """
-
-    Adds overlapping elements to the ORF to either orf.ovp_phased or orf.ovp_unphased lists.
-
-    Args:
-        orf (GffElement): a sequence from stop to stop codons
-        elements (list[GffElement]): elements of the GFF input files
-        co_ovp (float): cutoff used to define an overlapping element with an ORF
-
-    Returns:
-        None
-
-    """
-    orf_ovp_max = -1
-    if elements:
-        for element in elements:
-            orf_ovp, element_ovp, is_overlap = gff_parser.get_overlap(orf_coors=orf.get_coors(), other_coors=element.get_coors())
-            if element_ovp == 1.0 or orf_ovp >= co_ovp:
-                if isinstance(element.phase, int) and element.frame == orf.frame and element.strand == orf.strand:
-                    if element not in orf.ovp_phased:
-                        orf.ovp_phased.append(element)
-                else:
-                    if element not in orf.ovp_unphased:
-                        if orf_ovp > orf_ovp_max:
-                            orf_ovp_max = orf_ovp
-                            orf.ovp_unphased.append(element)
-
-
-def set_attributes(orf, orf_len):
-    suborfs = []
-    orf.set_type()
-    orf._id = orf.format_id()
-    orf.set_parent()
-    orf.set_color()
-    orf.set_status()
-
-    if orf.ovp_phased:
-        suborfs = get_suborfs(orf=orf, orf_len=orf_len)
-
-    return suborfs
-
-
-def get_suborfs(orf: gff_parser.GffElement, orf_len):
-    """
-
-    Checks if the sequence extremities of an ORF overlapping with a CDS are long enough to be considered as nc_ORF.
-    Adds them to the orfs list if the criteria is met.
-
-    Args:
-        orf (list): list of GffElement instances
-        orf_len (int): cutoff length of the sequence to be an ORF
-
-    Returns:
-        None
-
-    """
-    gff_line = orf.get_gffline()
-    suborfs = []
-
-    for element in orf.ovp_phased:
-        if is_5ter_ok(orf, element, orf_len=orf_len):
-            suborf_5ter = gff_parser.GffElement(gff_line=gff_line, fasta_chr=orf.fasta_chr)
-            suborf_5ter.type = 'nc_5-CDS'
-
-            if orf.strand == '+':
-                suborf_5ter.end = element.get_coors()[0] - 1
-            else:
-                suborf_5ter.start = element.get_coors()[1] + 1
-
-            suborf_5ter.frame = orf.frame
-            suborf_5ter.status = 'non-coding'
-            suborf_5ter.color = '#ffc100'
-            suborf_5ter._id = suborf_5ter.format_id()
-            suborf_5ter.parent = orf.format_id()
-            suborfs.append(suborf_5ter)
-
-        if is_3ter_ok(orf, element, orf_len=orf_len):
-            suborf_3ter = gff_parser.GffElement(gff_line=gff_line, fasta_chr=orf.fasta_chr)
-            suborf_3ter.type = 'nc_3-CDS'
-
-            if orf.strand == '+':
-                suborf_3ter.start = element.get_coors()[1] + 1
-            else:
-                suborf_3ter.end = element.get_coors()[0] - 1
-
-            suborf_3ter.frame = orf.frame
-            suborf_3ter.status = 'non-coding'
-            suborf_3ter.color = '#ffc100'
-            suborf_3ter._id = suborf_3ter.format_id()
-            suborf_3ter.parent = orf.format_id()
-            suborfs.append(suborf_3ter)
-
-    return suborfs
 
 
 def is_5ter_ok(orf, element, orf_len=60):
