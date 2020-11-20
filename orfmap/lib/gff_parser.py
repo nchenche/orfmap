@@ -179,10 +179,6 @@ class GffElement:
                         if element not in self.ovp_unphased:
                             element.orf_ovp = orf_ovp
                             self.ovp_unphased.append(element)
-                        # if element not in self.ovp_unphased:
-                        #     if orf_ovp > orf_ovp_max:
-                        #         orf_ovp_max = orf_ovp
-                        #         self.ovp_unphased.append(element)
 
     def set_type(self, is_fragment=False):
         if self.ovp_phased:

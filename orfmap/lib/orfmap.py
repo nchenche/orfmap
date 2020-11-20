@@ -1,5 +1,4 @@
 import os
-import sys
 from orfmap.lib import logHandler
 from orfmap.lib import gff_parser
 
@@ -105,8 +104,6 @@ def build_orf(gff_chr, strand, frame, coors, param, extremity=False):
         orf.start = start_pos
         orf.end = end_pos - 3 if not extremity else end_pos
 
-    elements_around_orf = gff_chr.get_elements(coors=orf.get_coors())
-
     orf.run_assignment(elements=gff_chr.get_elements(coors=orf.get_coors()),
                        param=param, is_fragment=False)
     if orf.type == "c_CDS" and orf.ovp_phased:
@@ -116,13 +113,6 @@ def build_orf(gff_chr, strand, frame, coors, param, extremity=False):
             for suborf in orf.suborfs:
                 suborf.run_assignment(elements=gff_chr.get_elements(coors=suborf.get_coors()),
                                       param=param, is_fragment=True)
-                if suborf.ovp_unphased:
-                    logger.info('  - suborf coors: {}:{}'.format(suborf.start, suborf.end))
-                    logger.info('  - suborf strand: {}'.format(suborf.strand))
-                    logger.info('  - suborf type: {}'.format(suborf.type))
-                    logger.info('  - suborf frame: {}'.format(suborf.frame))
-                    logger.info('  - suborf id: {}'.format(suborf.id_))
-                    logger.info('')
 
     return orf
 
@@ -136,20 +126,6 @@ def write_outputs(out_fasta, out_gff, orf, param):
             if is_orf_asked(orf=suborf, param=param):
                 out_gff.write(suborf.get_gffline())
                 out_fasta.write(suborf.get_fastaline())
-
-
-def is_5ter_ok(orf, element, orf_len=60):
-    if orf.strand == '+':
-        return element.get_coors()[0] - 1 - orf.start + 1 >= orf_len
-    else:
-        return orf.end - element.get_coors()[1] + 1 + 1 >= orf_len
-
-
-def is_3ter_ok(orf, element, orf_len=60):
-    if orf.strand == '+':
-        return orf.end - element.get_coors()[1] + 1 + 1 >= orf_len
-    else:
-        return element.get_coors()[0] - 1 - orf.start + 1 >= orf_len
 
 
 def is_orf_asked(orf=None, param=None):
