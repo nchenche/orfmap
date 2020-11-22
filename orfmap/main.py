@@ -11,9 +11,9 @@ from orfmap.lib import logHandler
 from orfmap.lib import fasta_parser
 from orfmap.lib import gff_parser
 from orfmap.lib import parameters
-from orfmap.lib import inspect
+# from orfmap.lib import inspect
 from orfmap.lib import tools
-import os
+
 
 def main():
     # gets arguments
@@ -40,15 +40,6 @@ def main():
     #         gff_chr = gff_data[chr_id]
     #         for fasta in gff_chr.proteins_fasta():
     #             faa_file.write(fasta)
-
-    # for chr_id in sorted(gff_data)[:1]:
-    #     proteins = gff_data[chr_id].group_cds()
-    #
-    #     for protein in sorted(proteins):
-    #         logger.info('## {}'.format(protein))
-    #         for cds in proteins[protein]:
-    #             logger.info('  - cds: {} {}/{} {}'.format(cds.id_, cds.idx, cds.nb, cds.get_coors()))
-    # sys.exit(0)
 
     # checking if type(s) given in argument is(are) valid
     # inspect.check_types(gff_data=gff_data, types=param.types)

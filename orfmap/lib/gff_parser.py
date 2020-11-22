@@ -468,6 +468,13 @@ class Chromosome:
             fasta += ''.join([cds.translate() for cds in proteins[protein]]) + '\n'
             yield fasta
 
+    def proteins_fastanuc(self):
+        proteins = self.group_cds()
+        for protein in sorted(proteins):
+            fastanuc = '>' + protein + ':' + self.id_ + '\n'
+            fastanuc += ''.join([cds.sequence() for cds in proteins[protein]]) + '\n'
+            yield fastanuc
+
     def index_cds(self):
         proteins = self.group_cds()
         for protein in sorted(proteins):
