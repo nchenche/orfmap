@@ -14,5 +14,5 @@ st.setup(name='orfmap',
          version='0.0',
          packages=packages,
          entry_points={'console_scripts': ['run_orfmap=orfmap.main:main',
-                                           'gff2prot=orfmap.scripts.gff2prot.main']}
+                                           'gff2prot=orfmap.scripts.gff2prot:main']}
          )
