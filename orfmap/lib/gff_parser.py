@@ -117,6 +117,11 @@ class GffElement:
 
         return fastaline
 
+    def get_fastanuc_line(self):
+        fastaline = '>'+self.id_+'\n'+self.sequence()+'\n'
+
+        return fastaline
+
     def get_gffline(self):
         # if self.gff_line and 'frag' not in self.type:
         #     return '\t'.join(self.gff_line)

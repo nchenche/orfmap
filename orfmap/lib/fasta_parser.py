@@ -4,7 +4,7 @@ Created on Sun Jul 12 16:59:14 2020
 
 @author: nicolas
 """
-import random
+# import random
 from orfmap.lib import logHandler
 
 logger = logHandler.Logger(name=__name__)
@@ -120,9 +120,9 @@ class Fasta:
         end_pos = start_pos - 1 + len_sequence
 
         if strand == '+':
-            return ''.join(lines)[start_pos - 1 + phase:end_pos]
+            return ''.join(lines)[start_pos - 1 + phase:end_pos].upper()
         else:
-            return self.reverse_complement(''.join(lines)[start_pos - 1:end_pos - phase])
+            return self.reverse_complement(''.join(lines)[start_pos - 1:end_pos - phase]).upper()
 
     def get_line_nucindex(self, index=1):
         """
