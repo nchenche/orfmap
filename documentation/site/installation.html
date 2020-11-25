@@ -64,10 +64,6 @@
                 </ul>
                 <p class="caption"><span class="caption-text">Installation</span></p>
                 <ul class="current">
-                    <li class="toctree-l1"><a class="reference internal" href="download.html">Download</a>
-                    </li>
-                    <li class="toctree-l1"><a class="reference internal" href="virtualenv.html">Virtual environment</a>
-                    </li>
                     <li class="toctree-l1 current"><a class="reference internal current" href="installation.html">Install</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#1-download-and-uncompress-the-latest-release-archive">1. Download and uncompress the latest release archive</a>
@@ -148,8 +144,8 @@
 <h4 id="uncompress-the-archive">Uncompress the archive<a class="headerlink" href="#uncompress-the-archive" title="Permanent link">#</a></h4>
 <p>If you downloaded:</p>
 <ul>
-<li>the <em>.zip</em> file: <code>unzip ORFMap-x.x.x.zip</code></li>
-<li>the <em>.tar.gz</em> file: <code>gunzip ORFMap-x.x.x.tar.gz | tar xvf</code></li>
+<li>the <em>.zip</em> file: <code>unzip orfmap-x.x.x.zip</code></li>
+<li>the <em>.tar.gz</em> file: <code>tar xzvf orfmap-x.x.x.tar.gz</code></li>
 </ul>
 <h3 id="2-create-an-isolated-environment">2. Create an isolated environment<a class="headerlink" href="#2-create-an-isolated-environment" title="Permanent link">#</a></h3>
 <p>Although not strictly necessary, this step is highly recommended (it will allow you to work on different projects without having
@@ -167,12 +163,21 @@ any conflicting library versions).</p>
 Every time you'll need to work with libraries installed in this environment, you'll have
 to activate it. </p>
 <p>Once you're done working on your project, simply type <code>deactivate</code> to exit the environment.</p>
-<p>If you're sure you won't need your isolated environment anymore, you could clear it simply
-by removing the directory <code>my_env/</code></p>
+<div class="admonition note">
+    <p class="first admonition-title">
+        Note
+    </p>
+    <p class="last">
+        If you're sure you won't need your isolated environment anymore, you could clear it simply
+        by removing the directory:
+        <code>rm -r my_env/</code>
+    </p>
+</div>
+
 <h3 id="3-install-orfmap-in-your-isolated-environment">3. Install ORFMap in your isolated environment<a class="headerlink" href="#3-install-orfmap-in-your-isolated-environment" title="Permanent link">#</a></h3>
 <p>Be sure you're virtual environment is activated, and then follow the procedure described below.</p>
 <h4 id="go-to-the-orfmap-directory">Go to the ORFMap directory<a class="headerlink" href="#go-to-the-orfmap-directory" title="Permanent link">#</a></h4>
-<pre><code class="language-bash">cd ORFMap-x.x.x/
+<pre><code class="language-bash">cd orfmap-x.x.x/
 </code></pre>
 <h4 id="install">Install<a class="headerlink" href="#install" title="Permanent link">#</a></h4>
 <pre><code class="language-python">python setup.py install
@@ -180,9 +185,15 @@ by removing the directory <code>my_env/</code></p>
 <p>or </p>
 <pre><code class="language-python">pip install .
 </code></pre>
-<p>If you need to remove the package (for example in order to install a newest version), try:</p>
-<pre><code class="language-python">pip uninstall orfmap
-</code></pre>
+<div class="admonition note">
+    <p class="first admonition-title">
+        Note
+    </p>
+    <p class="last">
+        If you need to remove the package (for example in order to install a newest version), try:
+        <br> <code>pip uninstall orfmap</code> </br>
+    </p>
+</div>
               
             </div>
           </div>
@@ -193,7 +204,7 @@ by removing the directory <code>my_env/</code></p>
         <a href="usage.html" class="btn btn-neutral float-right" title="Command line examples">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="virtualenv.html" class="btn btn-neutral" title="Virtual environment"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="annotation.html" class="btn btn-neutral" title="ORF annotation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -219,7 +230,7 @@ by removing the directory <code>my_env/</code></p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="virtualenv.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="annotation.html" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
         <span style="margin-left: 15px"><a href="usage.html" style="color: #fcfcfc">Next &raquo;</a></span>
