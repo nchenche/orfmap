@@ -37,12 +37,6 @@ def main():
     fasta_hash = fasta_parser.parse(fasta_filename=param.fasta_fname)
     gff_data = gff_parser.parse(param=param, fasta_hash=fasta_hash, chr_id=param.chr)
 
-    # with open(param.outpath + os.path.basename(param.gff_fname)[:-4] + '.faa', 'w') as faa_file:
-    #     for chr_id in sorted(gff_data):
-    #         gff_chr = gff_data[chr_id]
-    #         for fasta in gff_chr.proteins_fasta():
-    #             faa_file.write(fasta)
-
     # checking if type(s) given in argument is(are) valid
     # inspect.check_types(gff_data=gff_data, types=param.types)
 
