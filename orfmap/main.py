@@ -30,6 +30,7 @@ def main():
     logo(logger)
     param.description()
 
+
     # parses fasta & gff by chromosomes
     logger.title('# Parsing GFF and fasta input files #')
     fasta_hash = fasta_parser.parse(fasta_filename=param.fasta_fname)

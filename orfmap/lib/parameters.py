@@ -36,6 +36,7 @@ class Param:
         self.co_ovp = args.co_ovp
         self.bool_types = args.bool_types
         self.bool_chrs = args.bool_chrs
+        self.bool_isfrag = args.bool_isfrag
 
         self.outpath = args.out if args.out.endswith('/') else args.out + '/'
         os.makedirs(self.outpath, exist_ok=True)
@@ -67,6 +68,7 @@ class Param:
         logger.info('- outfile: ' + self.outfile)
         logger.info('- bool_types: ' + str(self.bool_types))
         logger.info('- bool_chrs: ' + str(self.bool_chrs))
+        logger.info('- bool_isfrag: ' + str(self.bool_isfrag))
         logger.info('')
 
 
@@ -106,7 +108,9 @@ def get_args():
     parser.add_argument('--show-chrs', action='store_true', default=False,
                         dest='bool_chrs',
                         help='Print all chromosome names')
-
+    parser.add_argument('--frag-cds', action='store_true', default=False,
+                        dest='bool_isfrag',
+                        help='Generates fragments for CDS extremities that respect orf_len parameter.')
 
     args = parser.parse_args()
     

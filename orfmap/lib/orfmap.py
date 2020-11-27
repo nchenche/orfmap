@@ -110,7 +110,7 @@ def build_orf(gff_chr, strand, frame, coors, param, extremity=False):
     orf.run_assignment(elements=gff_chr.get_elements(coors=orf.get_coors()),
                        param=param, is_fragment=False)
 
-    if param.frag_cds:
+    if param.bool_isfrag:
         if orf.type == "c_CDS" and orf.ovp_phased:
             orf.fragment_phased_cds(orf_len=param.orf_len)
             if orf.suborfs:
