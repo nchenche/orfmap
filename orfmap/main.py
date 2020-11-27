@@ -13,10 +13,13 @@ from orfmap.lib import gff_parser
 from orfmap.lib import parameters
 # from orfmap.lib import inspect
 from orfmap.lib import tools
+import time
 
 
 def main():
     # gets arguments
+    start_time = time.time()
+
     param = parameters.Param(args=parameters.get_args())
 
     if param.bool_chrs:
@@ -44,6 +47,8 @@ def main():
     logger.title('# Mapping ORFs (stop-to-stop codons) #')
     orfmap.mapping(gff_data=gff_data, param=param)
 
+    logger.info("-- Execution time: {} seconds --".format((time.time() - start_time)))
+
 
 def logo(logger):
     logger.info('')
@@ -55,4 +60,5 @@ def logo(logger):
 
 
 if __name__ == '__main__':
+
     sys.exit(main())
