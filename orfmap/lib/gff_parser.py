@@ -202,13 +202,15 @@ class GffElement:
                 highest_overlapping_element = sorted([x for x in ovp_unphased_elements], key=lambda x: x.orf_ovp)[-1]
 
             if not is_fragment:
-                self.type = 'nc_ovp-' + highest_overlapping_element.type
-                if highest_overlapping_element.strand != self.strand:
-                    self.type += '-opp'
+                if highest_overlapping_element.strand == self.strand:
+                    self.type = 'nc_ovp_same_' + highest_overlapping_element.type
+                else:
+                    self.type = 'nc_ovp_opp_' + highest_overlapping_element.type
             else:
-                self.type += '_ovp-' + highest_overlapping_element.type
-                if highest_overlapping_element.strand != self.strand:
-                    self.type += '-opp'
+                if highest_overlapping_element.strand == self.strand:
+                    self.type += '_ovp_same_' + highest_overlapping_element.type
+                else:
+                    self.type += '_ovp_opp_' + highest_overlapping_element.type
         else:
             if not is_fragment:
                 self.type = 'nc_intergenic'
