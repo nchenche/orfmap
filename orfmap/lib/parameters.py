@@ -34,9 +34,11 @@ class Param:
         self.o_exclude = args.o_exclude
         self.orf_len = args.orf_len
         self.co_ovp = args.co_ovp
+
         self.bool_types = args.bool_types
         self.bool_chrs = args.bool_chrs
-        self.bool_isfrag = args.bool_isfrag
+        self.is_frag = args.bool_isfrag
+        self.o_fasta = args.bool_ofasta
 
         self.outpath = args.out if args.out.endswith('/') else args.out + '/'
         os.makedirs(self.outpath, exist_ok=True)
@@ -68,7 +70,8 @@ class Param:
         logger.info('- outfile: ' + self.outfile)
         logger.info('- bool_types: ' + str(self.bool_types))
         logger.info('- bool_chrs: ' + str(self.bool_chrs))
-        logger.info('- bool_isfrag: ' + str(self.bool_isfrag))
+        logger.info('- isfrag: ' + str(self.is_frag))
+        logger.info('- ofasta: ' + str(self.o_fasta))
         logger.info('')
 
 
@@ -102,6 +105,7 @@ def get_args():
                              with the CDS sequence.")
     parser.add_argument("-out", required=False, nargs="?", default='./', type=str,
                         help="Output directory")
+
     parser.add_argument('--show-types', action='store_true', default=False,
                         dest='bool_types',
                         help='Print all type features')
@@ -111,6 +115,9 @@ def get_args():
     parser.add_argument('--frag-cds', action='store_true', default=False,
                         dest='bool_isfrag',
                         help='Generates fragments for CDS extremities that respect orf_len parameter.')
+    parser.add_argument('--ofasta', action='store_true', default=False,
+                        dest='bool_ofasta',
+                        help='Writes amino acid and nucleic fasta files for ORFs')
 
     args = parser.parse_args()
     

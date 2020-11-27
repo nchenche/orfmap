@@ -18,15 +18,25 @@ def mapping(gff_data, param):
         header = '# Input genomic fasta file: {}\n'.format(os.path.basename(param.fasta_fname))
         header += '# Input gff file: {}\n'.format(os.path.basename(param.gff_fname))
         out_gff.write(header)
-        with open(param.outfile + '.faa', "a+") as out_fasta:
-            with open(param.outfile + '.fna', "a+") as out_nucleic:
-                for chr_id in sorted(gff_data):
-                    logger.info('Reading chromosome {} ...'.format(chr_id))
-                    gff_chr = gff_data[chr_id]
 
-                    logger.info(' - ORF mapping and assignment')
-                    get_orfs(gff_chr=gff_chr, param=param, outfiles=[out_gff, out_fasta, out_nucleic])
-                    logger.info('')
+        if param.o_fasta:
+            out_fasta = open(param.outfile + '.faa', "a+")
+            out_nucleic = open(param.outfile + '.fna', "a+")
+        else:
+            out_fasta = None
+            out_nucleic = None
+
+        for chr_id in sorted(gff_data):
+            logger.info('Reading chromosome {} ...'.format(chr_id))
+            gff_chr = gff_data[chr_id]
+
+            logger.info(' - ORF mapping and assignment')
+            get_orfs(gff_chr=gff_chr, param=param, outfiles=[out_gff, out_fasta, out_nucleic])
+            logger.info('')
+
+        if param.o_fasta:
+            out_fasta.close()
+            out_nucleic.close()
 
 
 def get_orfs(gff_chr, param, outfiles: list):
@@ -110,7 +120,7 @@ def build_orf(gff_chr, strand, frame, coors, param, extremity=False):
     orf.run_assignment(elements=gff_chr.get_elements(coors=orf.get_coors()),
                        param=param, is_fragment=False)
 
-    if param.bool_isfrag:
+    if param.is_frag:
         if orf.type == "c_CDS" and orf.ovp_phased:
             orf.fragment_phased_cds(orf_len=param.orf_len)
             if orf.suborfs:
@@ -124,14 +134,16 @@ def build_orf(gff_chr, strand, frame, coors, param, extremity=False):
 def write_outputs(out_fasta, out_gff, out_nucleic, orf, param):
     if is_orf_asked(orf=orf, param=param):
         out_gff.write(orf.get_gffline())
-        out_fasta.write(orf.get_fastaline())
-        out_nucleic.write(orf.get_fastanuc_line())
+        if param.o_fasta:
+            out_fasta.write(orf.get_fastaline())
+            out_nucleic.write(orf.get_fastanuc_line())
     if orf.suborfs:
         for suborf in orf.suborfs:
             if is_orf_asked(orf=suborf, param=param):
                 out_gff.write(suborf.get_gffline())
-                out_fasta.write(suborf.get_fastaline())
-                out_nucleic.write(suborf.get_fastanuc_line())
+                if param.o_fasta:
+                    out_fasta.write(orf.get_fastaline())
+                    out_nucleic.write(orf.get_fastanuc_line())
 
 
 def is_orf_asked(orf=None, param=None):
