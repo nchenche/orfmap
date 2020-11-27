@@ -107,6 +107,7 @@ def get_args():
                         dest='bool_chrs',
                         help='Print all chromosome names')
 
+
     args = parser.parse_args()
     
     return args

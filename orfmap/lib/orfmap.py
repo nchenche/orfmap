@@ -109,12 +109,14 @@ def build_orf(gff_chr, strand, frame, coors, param, extremity=False):
 
     orf.run_assignment(elements=gff_chr.get_elements(coors=orf.get_coors()),
                        param=param, is_fragment=False)
-    if orf.type == "c_CDS" and orf.ovp_phased:
-        orf.fragment_phased_cds(orf_len=param.orf_len)
-        if orf.suborfs:
-            for suborf in orf.suborfs:
-                suborf.run_assignment(elements=gff_chr.get_elements(coors=suborf.get_coors()),
-                                      param=param, is_fragment=True)
+
+    if param.frag_cds:
+        if orf.type == "c_CDS" and orf.ovp_phased:
+            orf.fragment_phased_cds(orf_len=param.orf_len)
+            if orf.suborfs:
+                for suborf in orf.suborfs:
+                    suborf.run_assignment(elements=gff_chr.get_elements(coors=suborf.get_coors()),
+                                          param=param, is_fragment=True)
 
     return orf
 
@@ -130,6 +132,7 @@ def write_outputs(out_fasta, out_gff, out_nucleic, orf, param):
                 out_gff.write(suborf.get_gffline())
                 out_fasta.write(suborf.get_fastaline())
                 out_nucleic.write(suborf.get_fastanuc_line())
+
 
 def is_orf_asked(orf=None, param=None):
     if 'all' in param.o_include:
