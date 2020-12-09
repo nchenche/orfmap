@@ -2,7 +2,7 @@
 ORFMap - A tool aimed at scanning a genome for stop-codons delimited sequences (ORFs) and annotating them.
 
 ## Summary
-* <p><a href="#descr">Description</a></p>
+* <p><a href="#Description">Description</a></p>
 * <p><a href="#installation">Installation</a></p>
 * <p><a href="#usage_descr">Usage description</a></p>
 * <p><a href="#usage_ex">Some usage examples</a></p>
