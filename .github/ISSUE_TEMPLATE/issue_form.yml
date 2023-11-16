@@ -44,17 +44,17 @@ body:
         - Local installation
       default: 0
     validations:
-      required: true      
+      required: true
   - type: checkboxes
     id: program
     attributes:
       label: ORFmine Program
       description: Program related to the bug
       options:
-        label: ORFtrack
-        label: ORFfold
-        label: ORFdate
-        label: ORFribo
+        - label: ORFtrack
+        - label: ORFfold
+        - label: ORFdate
+        - label: ORFribo
     validations:
       required: true
   - type: textarea
