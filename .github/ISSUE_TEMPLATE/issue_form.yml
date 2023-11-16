@@ -1,57 +1,63 @@
 name: Bug Report
 description: Create a report about a newly identified bug 
 title: "[Bug]: "
-labels: ["bug", "triage"]
+labels: ["bug", "needs-triage"]
 body:
   - type: dropdown
     id: os
     attributes:
-      label: OS system
-      description: OS system ORFmine is installed on
+      label: Operating System
+      description: Which operating system is ORFmine installed on?
       options:
-        - Unix
-        - Mac Os
+        - Unix (e.g., Ubuntu 20.04)
+        - Mac OS (e.g., Big Sur 11.2.3)
         - Windows
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: version
     attributes:
-      label: Version
-      description: What ORFmine version are you using?
-      options:
-        - 2.0.0 (Latest)
-        - 0.8.7 (Deprecated)
-      default: 0
+      label: ORFmine Version
+      description: Enter the version of ORFmine you are using. You can find this by running `orfmine --version`.
+      placeholder: 2.0.0
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python Version
+      description: Which version of Python are you using with ORFmine?
+      placeholder: 3.9.1
     validations:
       required: true
   - type: dropdown
     id: virtual-env
     attributes:
-      label: Virtual environment
-      description: Which virtual environment have you used?
+      label: Virtual Environment
+      description: What virtual environment is being used?
       options:
-        - Conda
-        - Other
-        - Neither
+        - Conda (or related)
+        - venv/virtualenv
+        - Docker container
+        - None
     validations:
       required: true
   - type: dropdown
-    id: install
+    id: install-method
     attributes:
-      label: ORFmine usage
-      description: Please indicate how you are using ORFmine
+      label: Installation Method
+      description: How was ORFmine installed?
       options:
-        - Container image
-        - Local installation
-      default: 0
+        - Using pip
+        - From source
+        - Other (please specify)
     validations:
       required: true
   - type: checkboxes
     id: program
     attributes:
-      label: ORFmine Program
-      description: Program related to the bug
+      label: Affected ORFmine Program
+      description: Which program is related to the bug?
       options:
         - label: ORFtrack
         - label: ORFfold
@@ -60,22 +66,51 @@ body:
     validations:
       required: true
   - type: textarea
-    id: what-happened
+    id: command
     attributes:
-      label: Bug description
-      description: A clear and concise description of what the bug is, and eventually what you expected to happen
+      label: Command Executed
+      description: The exact command(s) you ran when you encountered the bug.
+      placeholder: "orfmine analyze --option value"
     validations:
       required: true
   - type: textarea
-    id: to-reproduce
+    id: what-happened
     attributes:
-      label: Steps to reproduce
-      description: Steps to reproduce the behavior
+      label: Bug Description
+      description: What is the bug? What did you expect to happen and what actually happened?
+      placeholder: "I expected ..., but instead ..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Provide detailed steps to reproduce the behavior.
+      placeholder: "1. Execute command '...'\n2. Navigate to '...'\n3. Error occurs..."
     validations:
       required: true
   - type: textarea
     id: logs
     attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      label: Relevant Log Output
+      description: Please copy and paste any relevant log output or error messages.
+      placeholder: "Paste logs here."
       render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: hardware-specs
+    attributes:
+      label: Hardware Specifications (optional)
+      description: Please provide details about your hardware if relevant to the issue.
+      placeholder: "CPU: 8-core, Memory: 16GB, Disk Type: SSD"
+    validations:
+      required: false
+  - type: checkboxes
+    id: agreement
+    attributes:
+      label: Confirmation
+      description: Please confirm that you have checked for duplicates and reviewed the documentation for this issue.
+      options:
+        - label: I confirm I have searched for duplicates and reviewed the relevant documentation.
+          required: true
