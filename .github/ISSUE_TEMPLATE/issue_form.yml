@@ -3,15 +3,22 @@ description: File to describe a bug report
 title: "[Bug]: "
 labels: ["bug", "triage"]
 body:
-  - type: markdown
+  - type: dropdown
+    id: os
     attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
+      label: OS system
+      description: OS system ORFmine is installed on
+      options:
+        - Unix
+        - Mac Os
+        - Windows
+    validations:
+      required: true
   - type: dropdown
     id: version
     attributes:
       label: Version
-      description: What ORFmine are you using?
+      description: What ORFmine version are you using?
       options:
         - 2.0.0 (Latest)
         - 0.8.7 (Deprecated)
@@ -21,8 +28,8 @@ body:
   - type: dropdown
     id: install
     attributes:
-      label: Install
-      description: Please indicate how did you use ORFmine
+      label: ORFmine usage
+      description: Please indicate how you are using ORFmine
       options:
         - Container image
         - Local installation
@@ -32,7 +39,7 @@ body:
   - type: dropdown
     id: program
     attributes:
-      label: Which program is related to the bug?
+      label: Program related to the bug
       multiple: true
       options:
         - ORFtrack
@@ -44,26 +51,15 @@ body:
   - type: textarea
     id: what-happened
     attributes:
-      label: What happened?
-      description: Please describe the bug
-      placeholder: A clear and concise description of what the bug is.
-      value: "A bug happened!"
+      label: Bug description
+      description: A clear and concise description of what the bug is, and eventually what you expected to happen
     validations:
       required: true
   - type: textarea
-    id: expected-behavior
-    attributes:
-      label: Expected
-      description: Expected behavior
-      placeholder: If possible, a clear and concise description of what you expected to happen.
-      value: "expected"
-  - type: textarea
     id: to-reproduce
     attributes:
-      label: Reproduce
+      label: Steps to reproduce
       description: Steps to reproduce the behavior
-      placeholder: Steps followed to produce the bug (command, inputs, parameters...).
-      value: "reproduce"
     validations:
       required: true
   - type: textarea
