@@ -33,7 +33,8 @@ body:
       options:
         - Conda
         - Other
-        - Neither
+    validations:
+      required: true
   - type: dropdown
     id: install
     attributes:
