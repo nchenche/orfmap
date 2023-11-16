@@ -33,6 +33,7 @@ body:
       options:
         - Conda
         - Other
+        - None
     validations:
       required: true
   - type: dropdown
