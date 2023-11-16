@@ -1,0 +1,52 @@
+name: Feature Request
+description: Suggest an idea or enhancement for ORFmine
+title: "[FEATURE]: "
+labels: ["enhancement", "needs-triage"]
+assignees:
+  - [Your GitHub Username]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thank you for your feature request!** We value your contribution and will consider each suggestion to improve ORFmine. Please provide as much detail as possible.
+  - type: input
+    id: title
+    attributes:
+      label: Feature Title
+      description: A short, descriptive title for your feature request.
+      placeholder: "Customizable Genetic Code for ORF Annotation"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: What is the feature and why should it be added to ORFmine?
+      placeholder: "Allow users to specify different genetic code tables for ORF annotation to accommodate species-specific or mitochondrial codon usage."
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation and Context
+      description: Why is this feature important? How will it benefit ORFmine users?
+      placeholder: "Currently, ORFmine uses a hardcoded standard genetic code which is not suitable for all organisms. Allowing users to select a genetic code table would make ORFmine more versatile and accurate for a range of species."
+    validations:
+      required: true
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: Technical Details and Implementation
+      description: Provide any technical details and potential ways to implement this feature.
+      placeholder: |
+        "Integrate with Bio.Data.CodonTable to allow selection of genetic code tables. A parameter in ORFmine could accept the ID of the desired NCBI genetic code table, adjusting the start and stop codons accordingly."
+    validations:
+      required: false
+  - type: checkboxes
+    id: agreement
+    attributes:
+      label: Duplicate Check
+      description: Have you searched for existing feature requests to avoid duplicates?
+      options:
+        - label: I have searched the existing feature requests and did not find a duplicate.
+          required: true
