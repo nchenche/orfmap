@@ -39,7 +39,7 @@ body:
         - Conda (or related)
         - venv/virtualenv
         - Docker container
-        - None
+        - Not using a virtual environment
     validations:
       required: true
   - type: dropdown
