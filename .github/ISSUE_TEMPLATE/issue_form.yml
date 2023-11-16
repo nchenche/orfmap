@@ -1,5 +1,5 @@
 name: Bug Report
-description: File to describe a bug report
+description: Create a report about a newly identified bug 
 title: "[Bug]: "
 labels: ["bug", "triage"]
 body:
@@ -25,6 +25,14 @@ body:
       default: 0
     validations:
       required: true
+  - type: checkboxes
+    id: virtual-env
+    attributes:
+      label: Which virtual environment have you used?
+      options:
+        - label: Conda
+        - label: Other
+        - label: None
   - type: dropdown
     id: install
     attributes:
