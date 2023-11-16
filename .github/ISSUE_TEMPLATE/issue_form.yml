@@ -1,4 +1,4 @@
-name: Bug Report
+ername: Bug Report
 description: Create a report about a newly identified bug 
 title: "[Bug]: "
 labels: ["bug", "triage"]
@@ -33,7 +33,7 @@ body:
       options:
         - Conda
         - Other
-        - None
+        - Neither
     validations:
       required: true
   - type: dropdown
