@@ -25,14 +25,15 @@ body:
       default: 0
     validations:
       required: true
-  - type: checkboxes
+  - type: dropdown
     id: virtual-env
     attributes:
-      label: Which virtual environment have you used?
+      label: Virtual environment
+      description: Which virtual environment have you used?
       options:
-        - label: Conda
-        - label: Other
-        - label: None
+        - Conda
+        - Other
+        - None
   - type: dropdown
     id: install
     attributes:
@@ -44,16 +45,16 @@ body:
       default: 0
     validations:
       required: true      
-  - type: dropdown
+  - type: checkboxes
     id: program
     attributes:
-      label: Program related to the bug
-      multiple: true
+      label: ORFmine Program
+      description: Program related to the bug
       options:
-        - ORFtrack
-        - ORFfold
-        - ORFdate
-        - ORFribo
+        label: ORFtrack
+        label: ORFfold
+        label: ORFdate
+        label: ORFribo
     validations:
       required: true
   - type: textarea
