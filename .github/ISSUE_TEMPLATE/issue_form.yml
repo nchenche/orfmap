@@ -12,6 +12,7 @@ body:
         - Unix (e.g., Ubuntu 20.04)
         - Mac OS (e.g., Big Sur 11.2.3)
         - Windows
+        - None
     validations:
       required: true
   - type: dropdown
@@ -66,14 +67,6 @@ body:
     validations:
       required: true
   - type: textarea
-    id: command
-    attributes:
-      label: Command Executed
-      description: The exact command(s) you ran when you encountered the bug.
-      placeholder: "orfold --faa foo.faa --options HIT"
-    validations:
-      required: true
-  - type: textarea
     id: what-happened
     attributes:
       label: Bug Description
@@ -85,7 +78,7 @@ body:
     id: steps-to-reproduce
     attributes:
       label: Steps to Reproduce
-      description: If appropriate, provide detailed steps to reproduce the behavior.
+      description: Provide detailed steps to reproduce the behavior.
       placeholder: "1. Execute command '...'\n2. Navigate to '...'\n3. Error occurs..."
     validations:
       required: false
