@@ -28,30 +28,29 @@ body:
   - type: input
     id: python-version
     attributes:
-      label: Python Version
+      label: Python Version (optional)
       description: Which version of Python are you using with ORFmine?
       placeholder: 3.9.1
   - type: dropdown
     id: virtual-env
     attributes:
-      label: Virtual Environment
+      label: Python Virtual Environment
       description: What virtual environment is being used?
       options:
         - Conda (or related)
         - venv/virtualenv
-        - Docker container
         - Not using a virtual environment
+      default: 2
     validations:
       required: true
   - type: dropdown
-    id: install-method
+    id: execution-environment
     attributes:
-      label: Installation Method
-      description: How was ORFmine installed?
+      label: Execution Environment
+      description: Which execution environment are you using for ORFmine?
       options:
-        - Using pip
-        - From source
-        - Other (please specify)
+        - Encapsulated environment from the ORFmine Docker image
+        - Local environment after installation of all external dependencies
     validations:
       required: true
   - type: checkboxes
@@ -61,13 +60,9 @@ body:
       description: Which program is related to the bug?
       options:
         - label: ORFtrack
-          required: true
         - label: ORFfold
-          required: true
         - label: ORFdate
-          required: true
         - label: ORFribo
-          required: true
     validations:
       required: true
   - type: textarea
