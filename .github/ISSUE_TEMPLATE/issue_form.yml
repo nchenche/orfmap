@@ -80,7 +80,7 @@ body:
       description: Provide detailed steps to reproduce the behavior.
       placeholder: "1. Execute command '...'\n2. Navigate to '...'\n3. Error occurs..."
     validations:
-      required: false
+      required: true
   - type: textarea
     id: logs
     attributes:
