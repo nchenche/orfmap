@@ -12,7 +12,6 @@ body:
         - Unix (e.g., Ubuntu 20.04)
         - Mac OS (e.g., Big Sur 11.2.3)
         - Windows
-        - None
     validations:
       required: true
   - type: dropdown
