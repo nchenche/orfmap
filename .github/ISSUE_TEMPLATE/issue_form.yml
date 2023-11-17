@@ -14,12 +14,15 @@ body:
         - Windows
     validations:
       required: true
-  - type: input
+  - type: dropdown
     id: version
     attributes:
-      label: ORFmine Version
-      description: Enter the version of ORFmine you are using. You can find this by running `orfmine --version`.
-      placeholder: 2.0.0
+      label: Version
+      description: What ORFmine version are you using?
+      options:
+        - 2.0.0 (Latest)
+        - 0.8.7 (Deprecated)
+      default: 0
     validations:
       required: true
   - type: input
@@ -28,8 +31,6 @@ body:
       label: Python Version
       description: Which version of Python are you using with ORFmine?
       placeholder: 3.9.1
-    validations:
-      required: true
   - type: dropdown
     id: virtual-env
     attributes:
@@ -60,9 +61,13 @@ body:
       description: Which program is related to the bug?
       options:
         - label: ORFtrack
+          required: true
         - label: ORFfold
+          required: true
         - label: ORFdate
+          required: true
         - label: ORFribo
+          required: true
     validations:
       required: true
   - type: textarea
@@ -70,7 +75,7 @@ body:
     attributes:
       label: Command Executed
       description: The exact command(s) you ran when you encountered the bug.
-      placeholder: "orfmine analyze --option value"
+      placeholder: "orfold --faa foo.faa --options HIT"
     validations:
       required: true
   - type: textarea
@@ -85,10 +90,10 @@ body:
     id: steps-to-reproduce
     attributes:
       label: Steps to Reproduce
-      description: Provide detailed steps to reproduce the behavior.
+      description: If appropriate, provide detailed steps to reproduce the behavior.
       placeholder: "1. Execute command '...'\n2. Navigate to '...'\n3. Error occurs..."
     validations:
-      required: true
+      required: false
   - type: textarea
     id: logs
     attributes:
@@ -99,11 +104,11 @@ body:
     validations:
       required: false
   - type: textarea
-    id: hardware-specs
+    id: extra-details
     attributes:
-      label: Hardware Specifications (optional)
-      description: Please provide details about your hardware if relevant to the issue.
-      placeholder: "CPU: 8-core, Memory: 16GB, Disk Type: SSD"
+      label: Additional context (optional)
+      description: Please provide other additional details that could be relevant to the issue.
+      placeholder: "e.g. (CPU, memory, input file(s) size...)"
     validations:
       required: false
   - type: checkboxes
